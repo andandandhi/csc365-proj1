@@ -74,12 +74,6 @@ public class RestaurantDB {
         return employeeList;
     }
 
-    public static void main(String[] args) {
-        RestaurantDB q = new RestaurantDB();
-        List<String> dn = q.getDishNames();
-        for(int i = 0; i < dn.size(); i++){
-            System.out.println("Dish Name = " + dn.get(i));
-        }
-    }
+    
 
 }
