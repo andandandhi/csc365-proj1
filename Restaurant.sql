@@ -68,19 +68,6 @@ SELECT * FROM Dishes;
 alter table Dishes
 add category ENUM('Appetizers', 'Entrees', 'Desserts', 'Drinks')
 
-insert into Category (cat_id, did, cat_type)
-values
-(1,1, 'Entree'),
-(2,2, 'Entree'),
-(3,3, 'Entree'),
-(4,4, 'Entree'),
-(5,5, 'Entree'),
-(6,6, 'Entree'),
-(7,7, 'Entree'),
-(8,8, 'Appetizers'),
-(9,9, 'Dessert'),
-(10,10,'Appetizers'),
-(11,11,'Appetizers');
 
 SELECT * FROM Category;
 insert into Employees (eid, ename, earned, role)
