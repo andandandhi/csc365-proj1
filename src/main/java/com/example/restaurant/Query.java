@@ -51,6 +51,29 @@ public class Query{
         return dishList;
     }
 
+    public List<Employee> getEmployees(){
+        List<Employee> employeeList = new ArrayList<Employee>();
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            connect = DriverManager.getConnection(
+                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
+            Statement statement = connect.createStatement();
+            ResultSet rs = statement.executeQuery(
+                    "SELECT * FROM Employees");
+            while (rs.next()) {
+                int eid = rs.getInt(1);
+                String ename = rs.getString(2);
+                double earned = rs.getDouble(3);
+                String role = rs.getString(4);
+                Employee e = new Employee(eid, ename, earned, role);
+                employeeList.add(e);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return employeeList;
+    }
+
         public static void main(String[] args) {
             Query q = new Query();
             List<String> dn = q.getDishNames();
