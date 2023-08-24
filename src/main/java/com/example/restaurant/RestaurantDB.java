@@ -97,6 +97,10 @@ public class RestaurantDB {
         }
         return tableList;
     }
+
+    /**
+     * does not include running balance
+     */
     public List<LedgerEntry> getLedgerEntries(){
         List<LedgerEntry> ledgerList = new ArrayList<LedgerEntry>();
         try {
@@ -120,6 +124,73 @@ public class RestaurantDB {
         return ledgerList;
     }
 
+    /**
+     * Assign server to a table. Set table state to Ordering
+     */
+    public void assignServer() {
+
+    }
+
+    /**
+     * Adds a list of dishes associated with a table and sets the table state to Waiting.
+     *
+     * Modifies:
+     * - Orders
+     * - Tables
+     */
+    public void addOrders() {
+
+    }
+
+    /**
+     * Record total of order prices in the table tuple, clears all orders associated with the table, set table state
+     * to served.
+     *
+     * Modifies:
+     * - Tables
+     * - Orders
+     */
+    public void serveAllOrders() {
+
+    }
+
+    public void clearAllOrders()
+    {
+
+    }
+
+    /**
+     * Applies the tip to the table's total. Marks the table as vacant, increments employee's earned
+     * attribute, and adds the total * tip quantity. Does NOT remove employee earnings from
+     * balance in the ledger (that occures when employees are paid).
+     *
+     * Modifies:
+     * - Tables
+     * - Employees
+     * - Ledger
+     */
+    public void vacateTable() {
+
+    }
+
+    /**
+     * Decrements the employee's earned amount and records the changes in the ledger.
+     *
+     * Modifies:
+     * - Employees
+     * - Ledger
+     */
+    public void payEmployee() {
+
+    }
+
+    public static void main(String[] args) {
+        RestaurantDB q = new RestaurantDB();
+        List<String> dn = q.getDishNames();
+        for(int i = 0; i < dn.size(); i++){
+            System.out.println("Dish Name = " + dn.get(i));
+        }
+    }
 
 
 }
