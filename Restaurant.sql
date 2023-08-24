@@ -15,15 +15,14 @@ CREATE TABLE Category(
 CREATE TABLE Employees(
    eid INTEGER PRIMARY KEY AUTO_INCREMENT,
    ename VARCHAR(100),
-   earned DOUBLE(3,2),
+   earned DOUBLE,
    role VARCHAR(50)
    );
-
 
 CREATE TABLE Tables(
     tid INTEGER PRIMARY KEY AUTO_INCREMENT,
     seats INTEGER,
-    charge DOUBLE(3,2),
+    charge DOUBLE,
     State ENUM ('Waiting', 'Vacant', 'Served') 
 );
 
@@ -66,6 +65,21 @@ values
 
 SELECT * FROM Dishes;
 
+insert into Category (cat_id, did, cat_type)
+values
+(1,1, 'Entree'),
+(2,2, 'Entree'),
+(3,3, 'Entree'),
+(4,4, 'Entree'),
+(5,5, 'Entree'),
+(6,6, 'Entree'),
+(7,7, 'Entree'),
+(8,8, 'Appetizers'),
+(9,9, 'Dessert'),
+(10,10,'Appetizers'),
+(11,11,'Appetizers');
+
+SELECT * FROM Category;
 insert into Employees (eid, ename, earned, role)
 values
 (1, 'John Smith', 0.00, 'waiter'),
@@ -165,3 +179,8 @@ WHERE tid = table_id;
 UPDATE Tables
 SET State = 'Vacant', sid = NULL
 WHERE tid = table_id;
+
+
+
+
+
