@@ -49,7 +49,7 @@ DROP TABLE Tables;
 DROP TABLE Ledger;
 DROP TABLE Orders;
 
-insert into Dishes (did, dname, description, price)
+insert into Dishes (did, dname, description, price, category)
 values
 (1, 'Chicken Alfredo Pasta', 'Penne pasta in alfredo sauce with seasoned chicken breasts', 10.99),
 (2, 'Margarita Pizza', '12in pizza featuring a bubbly crust, crushed San Marzano tomato sauce, fresh mozzarella and basil, a drizzle of olive oil, and a sprinkle of salt', 12.99),
@@ -68,6 +68,17 @@ SELECT * FROM Dishes;
 alter table Dishes
 add category ENUM('Appetizers', 'Entrees', 'Desserts', 'Drinks')
 
+update Dishes
+set category='Entrees'
+where did in (1,2,3,4,5,6,7)
+
+update Dishes
+set category='Appetizers'
+where did in (8,10,11)
+
+update Dishes
+set category='Desserts'
+where did = 9
 
 SELECT * FROM Category;
 insert into Employees (eid, ename, earned, role)
