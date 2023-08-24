@@ -31,7 +31,8 @@ CREATE TABLE Ledger(
 	lid INTEGER PRIMARY KEY AUTO_INCREMENT,
 	ldate date,
 	note VARCHAR(200),
-	balance DOUBLE);
+	balance DOUBLE
+);
     
 ALTER TABLE Ledger
 MODIFY balance Double;
@@ -100,3 +101,67 @@ values
 (1,5);
 
 SELECT * FROM Orders;
+
+--Queries
+--Query for Employee
+--getEarned
+select Earned
+from Employees;
+
+--setEarned
+Update Employees
+Set earned=new_earned_amount
+Where eid=employee_id;
+
+--Table
+--setServer
+Update Tables
+Set State = 'Ordering',
+	sid = server_id
+Where tid = table_id;
+
+--addOrder
+insert into Orders (tid, did)
+values
+	(2,6),
+	(2,8),
+	(2,9)
+);
+
+Update Tables
+Set State = 'Waiting'
+Where tid = 2;
+
+--serveAllOrders
+DECLARE total_amount DECIMAL(10, 2);
+SELECT SUM(Dishes.price) INTO total_amount
+FROM Orders
+JOIN Dishes ON Orders.did = Dishes.did
+WHERE Orders.tid = table_id;
+
+DELETE FROM Orders
+WHERE tid = table_id;
+
+Update Tables
+Set State = 'Served'
+	sid = server_id
+Where tid=table_id
+
+--vacate method
+SELECT SUM(Dishes.price) INTO @total_amount
+FROM Orders
+JOIN Dishes ON Orders.did = Dishes.did
+WHERE Orders.tid = table_id;
+
+SET @tip_percentage = 0.15; -- Example: 15% tip
+SET @tip_amount = @total_amount * @tip_percentage;
+
+SET @grand_total = @total_amount + @tip_amount;
+
+UPDATE Ledger
+SET total = @grand_total
+WHERE tid = table_id;
+
+UPDATE Tables
+SET State = 'Vacant', sid = NULL
+WHERE tid = table_id;
