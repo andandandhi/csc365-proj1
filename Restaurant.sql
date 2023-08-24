@@ -80,6 +80,11 @@ update Dishes
 set category='Desserts'
 where did = 9
 
+--adding enum type 
+alter table Tables
+modify State ENUM('Waiting', 'Vacant', 'Served', 'Ordering')
+
+	
 SELECT * FROM Category;
 insert into Employees (eid, ename, earned, role)
 values
