@@ -88,7 +88,7 @@ public class RestaurantDB {
                 int eid = rs.getInt(2);
                 int seats = rs.getInt(3);
                 double total = rs.getDouble(4);
-                String tstateString = rs.getString(5)
+                String tstateString = rs.getString(5);
                 Table t = new Table(tid, eid, seats, total, tstateString);
                 tableList.add(t);
             }
