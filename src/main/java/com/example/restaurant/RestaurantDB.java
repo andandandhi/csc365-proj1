@@ -41,7 +41,7 @@ public class RestaurantDB {
                 String dName = rs.getString(2);
                 String description = rs.getString(3);
                 double price = rs.getDouble(4);
-                String categoryString = rs.getString(5)
+                String categoryString = rs.getString(5);
                 Dish d = new Dish(did, dName, description, price, categoryString);
                 dishList.add(d);
             }
@@ -74,6 +74,52 @@ public class RestaurantDB {
         return employeeList;
     }
 
-    
+    public List<Table> getTables(){
+        List<Table> tableList = new ArrayList<Table>();
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            connect = DriverManager.getConnection(
+                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
+            Statement statement = connect.createStatement();
+            ResultSet rs = statement.executeQuery(
+                    "SELECT * FROM Employees");
+            while (rs.next()) {
+                int tid = rs.getInt(1);
+                int eid = rs.getInt(2);
+                int seats = rs.getInt(3);
+                double total = rs.getDouble(4);
+                String tstateString = rs.getString(5)
+                Table t = new Table(tid, eid, seats, total, tstateString);
+                tableList.add(t);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return tableList;
+    }
+    public List<LedgerEntry> getLedgerEntries(){
+        List<LedgerEntry> ledgerList = new ArrayList<LedgerEntry>();
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            connect = DriverManager.getConnection(
+                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
+            Statement statement = connect.createStatement();
+            ResultSet rs = statement.executeQuery(
+                    "SELECT * FROM Employees");
+            while (rs.next()) {
+                int lid = rs.getInt(1);
+                String date = rs.getString(2);
+                String note = rs.getString(3);
+                double balance = rs.getDouble(4);
+                LedgerEntry l = new LedgerEntry(lid, date, note, balance);
+                ledgerList.add(l);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return ledgerList;
+    }
+
+
 
 }

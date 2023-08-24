@@ -6,14 +6,14 @@ public class Table {
     private int seats;
     private double charge;
 
-    private boolean vacant;
+    private TableState tstate;
 
-    public Table(int tid, int sid, int seats, double charge, boolean vacant) {
+    public Table(int tid, int sid, int seats, double charge, String tstate) {
         this.tid = tid;
         this.sid = sid;
         this.seats = seats;
         this.charge = charge;
-        this.vacant = vacant;
+        this.tstate = TableState.valueOf(tstate);
     }
 
     public int getTid() {
@@ -48,11 +48,11 @@ public class Table {
         this.charge = charge;
     }
 
-    public boolean isVacant() {
-        return vacant;
+    public TableState isVacant() {
+        return tstate;
     }
 
-    public void setVacant(boolean vacant) {
-        this.vacant = vacant;
+    public void setVacant(TableState tstate) {
+        this.tstate = tstate;
     }
 }

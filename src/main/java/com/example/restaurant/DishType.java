@@ -1,5 +1,5 @@
 package com.example.restaurant;
 
 public enum DishType {
-    APPETIZER, LUNCHES, DINNERS, DRINKS
+    APPETIZER, LUNCH, DINNER, DRINK
 }

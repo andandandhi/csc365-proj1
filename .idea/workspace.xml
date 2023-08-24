@@ -5,12 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4550c140-ce18-41bc-916a-fb1d18c25f27" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/restaurant/Dish.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/restaurant/Dish.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/restaurant/Query.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/restaurant/RestaurantDB.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/restaurant/TableState.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/restaurant/DishType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/restaurant/DishType.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/restaurant/Ledger.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/restaurant/LedgerEntry.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/restaurant/RestaurantDB.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/restaurant/RestaurantDB.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/restaurant/Table.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/restaurant/Table.java" afterDir="false" />
     </list>
-    <list id="e6ced525-8396-4622-94d3-57e1d2b41945" name="Changes by andrewandrew" comment="">
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/restaurant/Dish.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/restaurant/Dish.java" afterDir="false" />
-    </list>
+    <list id="e6ced525-8396-4622-94d3-57e1d2b41945" name="Changes by andrewandrew" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -26,15 +28,6 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="LineStatusTrackerManager">
-    <file path="$PROJECT_DIR$/src/main/java/com/example/restaurant/Dish.java">
-      <ranges>
-        <range start1="8" end1="8" start2="8" end2="9" changelist="4550c140-ce18-41bc-916a-fb1d18c25f27" />
-        <range start1="9" end1="10" start2="10" end2="11" changelist="e6ced525-8396-4622-94d3-57e1d2b41945" />
-        <range start1="14" end1="14" start2="15" end2="16" changelist="e6ced525-8396-4622-94d3-57e1d2b41945" />
-      </ranges>
-    </file>
-  </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
@@ -43,20 +36,20 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -71,5 +64,16 @@
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>

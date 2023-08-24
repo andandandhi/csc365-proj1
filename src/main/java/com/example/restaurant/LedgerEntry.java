@@ -1,10 +1,17 @@
 package com.example.restaurant;
-import java.sql.*;
 
-public class Ledger {
+public class LedgerEntry {
     private int lid;
     private String date; //TODO use Date instead of String
     private String note;
+
+    public LedgerEntry(int lid, String date, String note, double balance) {
+        this.lid = lid;
+        this.date = date;
+        this.note = note;
+        this.balance = balance;
+    }
+
     private double balance;
 
 
