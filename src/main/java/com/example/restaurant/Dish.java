@@ -6,12 +6,14 @@ public class Dish {
     private String dname;
     private String description;
     private double price;
+    private DishType category;
 
-    public Dish(int did, String dname, String description, double price) {
+    public Dish(int did, String dname, String description, double price, String categoryString) {
         this.did = did;
         this.dname = dname;
         this.description = description;
         this.price = price;
+        this.category = DishType.valueOf(categoryString);
     }
 
     public int getDid() {
@@ -44,5 +46,13 @@ public class Dish {
 
     public void setPrice(double price) {
         this.price = price;
+    }
+
+    public DishType category() {
+        return category;
+    }
+
+    public void setCategory(DishType category){
+        this.category = category;
     }
 }

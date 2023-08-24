@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="4550c140-ce18-41bc-916a-fb1d18c25f27" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/restaurant/Dish.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/restaurant/Dish.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/restaurant/Query.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/restaurant/RestaurantDB.java" afterDir="false" />
+    </list>
+    <list id="e6ced525-8396-4622-94d3-57e1d2b41945" name="Changes by andrewandrew" comment="">
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/restaurant/Dish.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/restaurant/Dish.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Enum" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="LineStatusTrackerManager">
+    <file path="$PROJECT_DIR$/src/main/java/com/example/restaurant/Dish.java">
+      <ranges>
+        <range start1="8" end1="8" start2="8" end2="9" changelist="4550c140-ce18-41bc-916a-fb1d18c25f27" />
+        <range start1="9" end1="10" start2="10" end2="11" changelist="e6ced525-8396-4622-94d3-57e1d2b41945" />
+        <range start1="14" end1="14" start2="15" end2="16" changelist="e6ced525-8396-4622-94d3-57e1d2b41945" />
+      </ranges>
+    </file>
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="2UReGsaSB0gpaHNUtGLsCz7oXQm" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="4550c140-ce18-41bc-916a-fb1d18c25f27" name="Changes" comment="" />
+      <created>1692906729592</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1692906729592</updated>
+      <workItem from="1692906730860" duration="381000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
