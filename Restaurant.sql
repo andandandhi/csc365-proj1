@@ -5,12 +5,6 @@ CREATE TABLE Dishes(
    price DOUBLE
    );
 
-CREATE TABLE Category(
-   cat_id int primary key auto_increment,
-   did int,
-   cat_type ENUM('Appetizers', 'Drinks', 'Entree', 'Dessert'),
-   foreign key(did) references Dishes(did)
-);
 
 CREATE TABLE Employees(
    eid INTEGER PRIMARY KEY AUTO_INCREMENT,
