@@ -65,6 +65,9 @@ values
 
 SELECT * FROM Dishes;
 
+alter table Dishes
+add category ENUM('Appetizers', 'Entrees', 'Desserts', 'Drinks')
+
 insert into Category (cat_id, did, cat_type)
 values
 (1,1, 'Entree'),
