@@ -9,7 +9,6 @@ import javafx.stage.Stage;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.List;
 
 public class MenuScene
 {
@@ -25,9 +24,12 @@ public class MenuScene
 
         this.restaurantDB = restaurantDB;
 
+        /* Produce an ArrayList of ListViews, one for each category, in
+        order of the Category enum. */
         EnumSet.allOf(RestaurantDB.Category.class).forEach(cat -> {
 
             ListView<Dish> newView = new ListView<>(FXCollections.observableList(restaurantDB.getDishesByCategory(cat)));
+            /* Establishes rule for what text is displayed */
             newView.setCellFactory(dish -> new ListCell<>() {
                 protected void updateItem(Dish item, boolean empty) {
                     if (empty || item == null || item.toString() == null) {
@@ -41,6 +43,8 @@ public class MenuScene
             views.add(cat.ordinal(), newView);
         });
 
+        /* Inserts all views into the root of this scene */
+        views.forEach(v -> root.getChildren().add(v));
     }
 
     public void display(Stage stage)
