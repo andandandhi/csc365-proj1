@@ -1,3 +1,11 @@
+DROP TABLE Orders;
+DROP TABLE Tables;
+DROP TABLE Dishes;
+DROP TABLE Ledger;
+DROP TABLE Employees;
+
+
+
 insert into Dishes (did, dname, category, description, price)
 values
 (1, 'Bruschetta', 'APPETIZER', 'Grilled bread rubbed with garlic and topped with fresh diced tomatoes, basil, olive oil, and sometimes mozzarella or other ingredients', 7.25),
