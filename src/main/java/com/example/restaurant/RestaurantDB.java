@@ -82,7 +82,7 @@ public class RestaurantDB {
                     "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
             Statement statement = connect.createStatement();
             ResultSet rs = statement.executeQuery(
-                    "SELECT * FROM Employees");
+                    "SELECT * FROM Tables");
             while (rs.next()) {
                 int tid = rs.getInt(1);
                 int eid = rs.getInt(2);
@@ -100,6 +100,7 @@ public class RestaurantDB {
 
     /**
      * does not include running balance
+     * TODO: use prepared statements
      */
     public List<LedgerEntry> getLedgerEntries(){
         List<LedgerEntry> ledgerList = new ArrayList<LedgerEntry>();
@@ -127,8 +128,26 @@ public class RestaurantDB {
     /**
      * Assign server to a table. Set table state to Ordering
      */
-    public void assignServer() {
+    public void assignServer(Table table, Employee employee) {
+        table.setTstate(TableState.ORDERING);
+        int eid = employee.getEid();
+        int tid = table.getTid();
+        table.setEid(eid);
 
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            connect = DriverManager.getConnection(
+                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
+            String updateString =   "UPDATE Tables\n" +
+                                    "SET tstate = 'ORDERING', eid = ? \n" +
+                                    "WHERE tid = ?";
+            PreparedStatement preparedStatement = connect.prepareStatement(updateString);
+            preparedStatement.setInt(1, eid);
+            preparedStatement.setInt(2, tid);
+            preparedStatement.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -186,10 +205,24 @@ public class RestaurantDB {
 
     public static void main(String[] args) {
         RestaurantDB q = new RestaurantDB();
-        List<String> dn = q.getDishNames();
-        for(int i = 0; i < dn.size(); i++){
-            System.out.println("Dish Name = " + dn.get(i));
+//        List<String> dn = q.getDishNames();
+//        for(int i = 0; i < dn.size(); i++){
+//            System.out.println("Dish Name = " + dn.get(i));
+//        }
+        List<Table> lt = q.getTables();
+        List<Employee> le = q.getEmployees();
+
+        for(int k = 0; k < lt.size(); k++){
+            System.out.println(lt.get(k).toString());
         }
+
+        q.assignServer(lt.get(0), le.get(3));
+
+        List<Table> lt2 = q.getTables();
+        for(int k = 0; k < lt2.size(); k++){
+            System.out.println(lt2.get(k).toString());
+        }
+
     }
 
 

@@ -2,15 +2,15 @@ package com.example.restaurant;
 
 public class Table {
     private int tid;
-    private int sid;
+    private int eid;
     private int seats;
     private double charge;
 
     private TableState tstate;
 
-    public Table(int tid, int sid, int seats, double charge, String tstate) {
+    public Table(int tid, int eid, int seats, double charge, String tstate) {
         this.tid = tid;
-        this.sid = sid;
+        this.eid = eid;
         this.seats = seats;
         this.charge = charge;
         this.tstate = TableState.valueOf(tstate);
@@ -24,12 +24,12 @@ public class Table {
         this.tid = tid;
     }
 
-    public int getSid() {
-        return sid;
+    public int getEid() {
+        return eid;
     }
 
-    public void setSid(int sid) {
-        this.sid = sid;
+    public void setEid(int eid) {
+        this.eid = eid;
     }
 
     public int getSeats() {
@@ -48,11 +48,22 @@ public class Table {
         this.charge = charge;
     }
 
-    public TableState isVacant() {
+    public TableState getTstate() {
         return tstate;
     }
 
-    public void setVacant(TableState tstate) {
+    public void setTstate(TableState tstate) {
         this.tstate = tstate;
+    }
+
+    @Override
+    public String toString() {
+        return "Table{" +
+                "tid=" + tid +
+                ", eid=" + eid +
+                ", seats=" + seats +
+                ", charge=" + charge +
+                ", tstate=" + tstate +
+                '}';
     }
 }
