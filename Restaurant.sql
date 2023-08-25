@@ -38,12 +38,5 @@ CREATE TABLE Ledger(
 );
 
 
-/*DROP TABLE Dishes;
-DROP TABLE Employees;
-DROP TABLE Tables;
-DROP TABLE Ledger;
-DROP TABLE Orders;*/
-
-
 
 
