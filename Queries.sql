@@ -72,12 +72,16 @@ Set total = total + tip
 WHERE tid = table_id
 
 Update Employees
-Set earned = earned + (Select total * tip FROM Tables WHERE tid = table_id),
+Set earned = earned + (Select total * tip_percentage FROM Tables WHERE tid = table_id),
+WHERE eid = employee_id;
 	
-	
-
 --payEmployee
+Update Employees
+Set earned = earned - payment-amount
+Where eid = employee_id;
 
+Insert Into Ledger (lid, date, note, balance)
+Values
 
 --getLedgerEntries
 Select * from Ledger
