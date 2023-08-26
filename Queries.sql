@@ -62,6 +62,19 @@ UPDATE Tables
 SET State = 'Vacant', sid = NULL
 WHERE tid = table_id;
 
+--clearAllOrder
+Drop from Orders
+
+--vacateTable
+
+
+--payEmployee
+
+
+--getLedgerEntries
+Select * from Ledger
+
+
 -- queries Tenzin is working on currently
 
 /*Retrieving Dishes Queries:
