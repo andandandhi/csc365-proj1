@@ -4,11 +4,13 @@
 -- getEarned
 select Earned
 from Employees;
+--check
 
 -- setEarned
 Update Employees
 Set earned=new_earned_amount
 Where eid=employee_id;
+--check
 
 -- Table
 -- setServer
@@ -16,6 +18,7 @@ Update Tables
 Set State = 'Ordering',
 	sid = server_id
 Where tid = table_id;
+
 
 -- addOrder
 insert into Orders (tid, did)
