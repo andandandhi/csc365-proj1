@@ -66,7 +66,15 @@ WHERE tid = table_id;
 Drop from Orders
 
 --vacateTable
+update Tables
+Set total = total + tip
+	State = 'VACANT'
+WHERE tid = table_id
 
+Update Employees
+Set earned = earned + (Select total * tip FROM Tables WHERE tid = table_id),
+	
+	
 
 --payEmployee
 
