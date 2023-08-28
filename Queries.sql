@@ -7,16 +7,17 @@ from Employees;
 
 -- setEarned
 Update Employees
-Set earned=new_earned_amount
-Where eid=employee_id;
+Set earned=25
+Where eid=1;
 -- check
 
 -- Table
 -- setServer
 Update Tables
 Set tstate = 'Ordering',
-	eid = server_id
-Where tid = table_id;
+	eid = 1
+Where tid = 1;
+-- check
 
 -- addOrder
 insert into Orders (tid, did)
@@ -24,6 +25,7 @@ values
 	(2,6),
 	(2,8),
 	(2,9);
+-- check
 
 Update Tables
 Set State = 'Waiting'
