@@ -157,25 +157,108 @@ public class RestaurantDB {
      * - Orders
      * - Tables
      */
-    public void addOrders() {
+    public void addOrders(List<Order> OrderList, Table table, List<Dish> DishList) {
+        table.setTstate(TableState.WAITING);
+        for(int i = 0; i < DishList.size(); i++){
+            OrderList.add(new Order(table.getTid(), DishList.get(i).getDid()));
+        }
+        for(int i = 0; i < DishList.size(); i++){
+            try {
+                Class.forName("com.mysql.jdbc.Driver");
+                connect = DriverManager.getConnection(
+                        "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
+                String updateString =   "INSERT INTO Orders\n" +
+                                        "VALUES( ? , ? )";
+                PreparedStatement preparedStatement = connect.prepareStatement(updateString);
+                preparedStatement.setInt(1, table.getTid());
+                preparedStatement.setInt(2, DishList.get(i).getDid());
+                preparedStatement.executeUpdate();
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+            try {
+                Class.forName("com.mysql.jdbc.Driver");
+                connect = DriverManager.getConnection(
+                        "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
+                String updateString =   "UPDATE Tables\n" +
+                                        "SET State = 'WAITING'" +
+                                        "WHERE tid = ? ";
+                PreparedStatement preparedStatement = connect.prepareStatement(updateString);
+                preparedStatement.setInt(1, table.getTid());
+                preparedStatement.executeUpdate();
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
 
+        }
     }
 
     /**
      * Record total of order prices in the table tuple, clears all orders associated with the table, set table state
      * to served.
-     *
+     * //TODO: move declarations into try statements
      * Modifies:
      * - Tables
      * - Orders
      */
-    public void serveAllOrders() {
+    public double serveAllOrders(List<Order> orderList, Table table) {
+        table.setTstate(TableState.SERVED);
+        int tid = table.getTid();
+        double totalBill = 0;
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            connect = DriverManager.getConnection(
+                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
+            String updateString =
+                    "UPDATE Tables\n" +
+                    "SET State = 'SERVED'" +
+                    "WHERE tid = ? ;";
+            PreparedStatement preparedStatement = connect.prepareStatement(updateString);
+            preparedStatement.setInt(1, table.getTid());
+            preparedStatement.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            connect = DriverManager.getConnection(
+                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
+            String queryString =   "SELECT SUM(Dishes.price)\n" +
+                    "FROM Orders\n" +
+                    "JOIN Dishes ON Orders.did = Dishes.did\n" +
+                    "WHERE Orders.tid = table_id;";
+            PreparedStatement preparedStatement = connect.prepareStatement(queryString);
+            preparedStatement.setInt(1, tid);
+            ResultSet rs = preparedStatement.executeQuery(
+                    "SELECT * FROM Employees");
+            while (rs.next()) {
+                totalBill = rs.getDouble(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
+        return totalBill;
     }
 
-    public void clearAllOrders()
-    {
-
+    /**
+     * Modifies:
+     * -Orders
+     */
+    public void clearAllOrders(List<Order> orderList) {
+        orderList.clear();
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            connect = DriverManager.getConnection(
+                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
+            String updateString =   "DROP FROM Orders";
+            PreparedStatement preparedStatement = connect.prepareStatement(updateString);
+            preparedStatement.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -189,18 +272,37 @@ public class RestaurantDB {
      * - Ledger
      */
     public void vacateTable() {
-
+        
     }
 
     /**
      * Decrements the employee's earned amount and records the changes in the ledger.
      *
+     * DOES NOT WORK!
+     *
      * Modifies:
      * - Employees
      * - Ledger
+     * TODO: decide Ledger or List<LedgerEntry>
      */
-    public void payEmployee() {
-
+    public void payEmployee(Employee employee, List<LedgerEntry> ledger, LedgerEntry ledgerEntry) {
+//        int eid = employee.getEid();
+//        ledger.add(ledgerEntry);
+//
+//        try {
+//            Class.forName("com.mysql.jdbc.Driver");
+//            connect = DriverManager.getConnection(
+//                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
+//            String updateString =   "UPDATE Tables\n" +
+//                    "SET tstate = 'ORDERING', eid = ? \n" +
+//                    "WHERE tid = ?";
+//            PreparedStatement preparedStatement = connect.prepareStatement(updateString);
+//            preparedStatement.setInt(1, eid);
+//            preparedStatement.setInt(2, tid);
+//            preparedStatement.executeUpdate();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
 
     public static void main(String[] args) {
