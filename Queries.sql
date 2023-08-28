@@ -4,11 +4,13 @@
 -- getEarned
 select Earned
 from Employees;
+--check
 
 -- setEarned
 Update Employees
 Set earned=new_earned_amount
 Where eid=employee_id;
+--check
 
 -- Table
 -- setServer
@@ -16,6 +18,7 @@ Update Tables
 Set State = 'Ordering',
 	sid = server_id
 Where tid = table_id;
+
 
 -- addOrder
 insert into Orders (tid, did)
@@ -61,6 +64,31 @@ WHERE tid = table_id;
 UPDATE Tables
 SET State = 'Vacant', sid = NULL
 WHERE tid = table_id;
+
+--clearAllOrder
+Drop from Orders
+
+--vacateTable
+update Tables
+Set total = total + tip
+	State = 'VACANT'
+WHERE tid = table_id
+
+Update Employees
+Set earned = earned + (Select total * tip_percentage FROM Tables WHERE tid = table_id),
+WHERE eid = employee_id;
+	
+--payEmployee
+Update Employees
+Set earned = earned - payment-amount
+Where eid = employee_id;
+
+Insert Into Ledger (lid, date, note, balance)
+Values
+
+--getLedgerEntries
+Select * from Ledger
+
 
 -- queries Tenzin is working on currently
 
