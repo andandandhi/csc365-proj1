@@ -14,10 +14,9 @@ Where eid=employee_id;
 -- Table
 -- setServer
 Update Tables
-Set State = 'Ordering',
-	sid = server_id
+Set tstate = 'Ordering',
+	eid = server_id
 Where tid = table_id;
-
 
 -- addOrder
 insert into Orders (tid, did)
