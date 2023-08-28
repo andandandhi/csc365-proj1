@@ -28,7 +28,7 @@ values
 -- check
 
 Update Tables
-Set State = 'Waiting'
+Set tstate = 'Waiting'
 Where tid = 2;
 
 -- serveAllOrders
@@ -42,8 +42,8 @@ DELETE FROM Orders
 WHERE tid = table_id;
 
 Update Tables
-Set State = 'Served'
-	sid = server_id
+Set tstate = 'Served'
+	eid = server_id
 Where tid=table_id
 
 -- vacate method
