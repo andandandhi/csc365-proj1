@@ -64,51 +64,84 @@ WHERE tid = table_id;
 
 -- queries Tenzin is working on currently
 
-/*Retrieving Dishes Queries:
-
-
-Retrieve All Dishes:
+-- Retrieving Dishes Queries:
+-- Retrieve All Dishes:
 SELECT * FROM Dishes;
 
+-- Retrieve Dishes by Category:
+SELECT * FROM Dishes WHERE category = 'APPETIZER';
 
-Retrieve Dishes by Category:
-SELECT * FROM Dishes WHERE did IN (
-            SELECT did FROM Category WHERE cat_type = 'Appetizers'
-            );
+-- Retrieve Dishes by Price Range:
+SELECT * FROM Dishes WHERE price BETWEEN 10.00 AND 20.00;
 
-
-Retrieve Dishes by Price Range:
-            SELECT * FROM Dishes WHERE price BETWEEN 10.00 AND 20.00;
-
-
-Retrieve Dish Details by Name:
+-- Retrieve Dish Details by Name:
 SELECT * FROM Dishes WHERE dname = 'Chicken Alfredo Pasta';
 
-
-Retrieve Dish Names Only:
+-- Retrieve Dish Names Only:
 SELECT dname FROM Dishes;
 
-
-Retrieving Ledger Queries:
-Retrieve All Ledger Entries:
-SELECT * FROM Ledger;
-
-
-Retrieve Ledger Entries by Date Range:
-SELECT * FROM Ledger WHERE ldate BETWEEN '2023-08-01' AND '2023-08-15';
-
-
-Retrieve Ledger Entries by Note Keyword:
-SELECT * FROM Ledger WHERE note LIKE '%starting%';
-
-
-Retrieve Ledger Balance for a Specific Date:
-SELECT balance FROM Ledger WHERE ldate <= '2023-08-10' ORDER BY ldate DESC LIMIT 1;
-
-
-Retrieve the Latest Ledger Entry:
-SELECT * FROM Ledger ORDER BY ldate DESC LIMIT 1;
-
+/* -- Add New Dish
+INSERT INTO Dishes(dname, description,category, price) 
+VALUES (' ',' ' ,' ' , );
 */
+
+/* -- Update Dishes
+UPDATE Dishes
+set  
+where did = 
+*/
+
+-- Retrieve All Employees:
+SELECT * FROM Employees;
+
+-- Retrieve Employees by Role:
+SELECT * FROM Employees WHERE role = 'WAITER';
+
+-- Retrieve Employees by Earnings Range 
+SELECT * FROM Employees WHERE earned > 1000.00;
+
+-- Retrieve Employee Details by Name
+SELECT * FROM Employees WHERE ename = 'John Smith';
+
+/*-- Update Employees
+UPDATE Employees
+set  
+where 
+*/
+-- Add New Employee
+
+-- AssignServer:
+UPDATE Tables
+SET eid = 1,
+    tstate = 'ORDERING'
+WHERE tid = 1;
+
+
+-- AddOrders:
+INSERT INTO Orders (tid, did)
+VALUES
+(1, 1),  -- Table 1 ordered Dish 1
+(1, 2),  -- Table 1 ordered Dish 2
+(1, 3);  -- Table 1 ordered Dish 3
+
+UPDATE Tables
+SET tstate = 'WAITING'
+WHERE tid = 1;
+
+-- serveAllOrders
+-- updates the tuple in the Tables table and clear orders
+UPDATE Tables
+SET total = (
+    SELECT SUM(D.price) 
+    FROM Orders AS O
+    INNER JOIN Dishes AS D ON O.did = D.did
+    WHERE O.tid = 1), 
+    tstate = 'SERVED'
+    WHERE tid = 1;
+
+-- Clears all orders associated with the table
+DELETE FROM Orders
+WHERE tid = 1;
+
 
 
