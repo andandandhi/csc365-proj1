@@ -62,32 +62,32 @@ SET total = @grand_total
 WHERE tid = table_id;
 
 UPDATE Tables
-SET State = 'Vacant', sid = NULL
+SET tstate = 'Vacant', sid = NULL
 WHERE tid = table_id;
 
---clearAllOrder
+-- clearAllOrder
 Drop from Orders
 
---vacateTable
+-- vacateTable
 update Tables
 Set total = total + tip
-	State = 'VACANT'
+	tstate = 'VACANT'
 WHERE tid = table_id
 
 Update Employees
 Set earned = earned + (Select total * tip_percentage FROM Tables WHERE tid = table_id),
 WHERE eid = employee_id;
 	
---payEmployee
+-- payEmployee
 Update Employees
-Set earned = earned - payment-amount
+Set earned = earned - payment_amount
 Where eid = employee_id;
 
 Insert Into Ledger (lid, date, note, balance)
 Values
 
---getLedgerEntries
-Select * from Ledger
+-- getLedgerEntries
+Select * from Ledger; 
 
 
 -- queries Tenzin is working on currently
