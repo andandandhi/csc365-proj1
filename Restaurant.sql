@@ -18,7 +18,8 @@ CREATE TABLE Tables(
     eid INTEGER,
     seats INTEGER,
     total DOUBLE,
-    tstate VARCHAR(16)
+    tstate VARCHAR(16),
+    FOREIGN KEY (eid) REFERENCES Employees(eid)
     
 );
 
