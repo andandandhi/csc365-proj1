@@ -1,16 +1,15 @@
-
 -- queries Eric is working on currently
 -- Query for Employee
 -- getEarned
 select Earned
 from Employees;
---check
+-- check
 
 -- setEarned
 Update Employees
 Set earned=new_earned_amount
 Where eid=employee_id;
---check
+-- check
 
 -- Table
 -- setServer
