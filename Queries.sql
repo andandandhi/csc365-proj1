@@ -33,6 +33,7 @@ Where tid = 2;
 -- checked
 
 -- serveAllOrders
+Delimiter //
 Create Procedure serveAllOrder(IN tid INT, In eid INT)
 Begin
 	DECLARE total_amount DECIMAL(10, 2);
@@ -41,14 +42,19 @@ Begin
 	FROM Orders
 	JOIN Dishes ON Orders.did = Dishes.did
 	WHERE Orders.tid = tid;
-
-	DELETE FROM Orders
+	
+    Update Tables
+	Set tstate = 'Served',
+		eid = server_id
+	Where tid=table_id;
+	
+    DELETE FROM Orders
 	WHERE tid = table_id;
 
-	Update Tables
-	Set tstate = 'Served'
-		eid = server_id
-	Where tid=table_id
+End;
+//
+Delimiter ; 
+
 
 -- vacate method
 SELECT SUM(Dishes.price) INTO @total_amount
