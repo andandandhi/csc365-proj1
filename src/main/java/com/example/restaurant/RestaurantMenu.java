@@ -1,4 +1,4 @@
 package com.example.restaurant;
 
-import javafx.scene.Scene;
-
+public class RestaurantMenu {
+}
