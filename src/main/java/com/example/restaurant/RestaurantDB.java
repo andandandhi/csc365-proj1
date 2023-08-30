@@ -276,7 +276,7 @@ public class RestaurantDB {
                     "JOIN Dishes ON Orders.did = Dishes.did\n" +
                     "WHERE Orders.tid = table_id;";
             PreparedStatement preparedStatement = connect.prepareStatement(queryString);
-            preparedStatement.setInt(1, tid);
+            //preparedStatement.setInt(1, tid);
             ResultSet rs = preparedStatement.executeQuery(
                     "SELECT * FROM Employees");
             while (rs.next()) {
