@@ -39,6 +39,8 @@ public class Employee {
         this.earned = earned;
     }
 
+    public void addEarned(double increase){this.earned += increase;}
+
     public String getRole() {
         return role;
     }
