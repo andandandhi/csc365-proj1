@@ -313,7 +313,8 @@ public class RestaurantDB {
      *
      * @Args: tip: input 12.3 means a $12.30 tip
      */
-    public void vacateTable(Table table, Employee employee, List<LedgerEntry> ledger, double tip) {
+    public void vacateTable(Table table, List<Employee> employeeList, List<LedgerEntry> ledger, double tip) {
+
 
         int tid = table.getTid();
         table.setTstate(TableState.VACANT);
@@ -325,6 +326,7 @@ public class RestaurantDB {
 
         double finalBill = table.getTotal() + tip;
 
+        Employee employee = employeeList.get(table.getEid());
         int eid = employee.getEid();
         employee.addEarned(tip);
 
