@@ -69,7 +69,12 @@ SET @grand_total = @total_amount + @tip_amount;
 
 UPDATE Ledger
 SET total = @grand_total
-WHERE tid = table_id;
+WHERE oid = (
+	Select oid
+    From Orders
+    Where tid = table_id
+    Limit 1
+);
 
 UPDATE Tables
 SET tstate = 'Vacant', sid = NULL
