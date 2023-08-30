@@ -2,8 +2,11 @@ package com.example.restaurant;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
@@ -11,75 +14,104 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
-import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.StringJoiner;
 
 class OwnerMenu extends RestaurantScene
 {
-    private Stage stage;
-    private ListView<Dish> listView;
-    private TabPane tabs;
-    private Scene scene;
+    private final ArrayList<ListView<Dish>> views;
+    private final ObservableList<Dish> dishes;
+    private final TabPane categoryTabs;
+    private ArrayList<FilteredList<Dish>> filteredLists;
 
-    public OwnerMenu(RestaurantDB restaurantDB , Stage stage)
+    private final Pane layout;
+
+    public OwnerMenu(RestaurantDB restaurantDB)
     {
-        this.stage = stage;
-        this.listView = new ListView<>();
+        this.categoryTabs = new TabPane();
+
         this.dishes = FXCollections.observableList(restaurantDB.getDishes(false));
 
-        listView.prefWidthProperty().bind(stage.widthProperty());
-        listView.prefHeightProperty().bind(stage.heightProperty());
-        listView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        this.listView.setCellFactory(new Callback<ListView<Dish>, ListCell<Dish>>() {
+//        this.categoryTabs.prefWidthProperty().bind(t.getTabPane().widthProperty());
+//        this.categoryTabs.prefHeightProperty().bind(stage.heightProperty());
 
-            /* Overrides the call method to custom-define how cells are created */
-            @Override
-            public ListCell<Dish> call(ListView<Dish> dishListView) {
-                /* Creates a new ListCell that displays a formatted string for the dish*/
-                return new ListCell<Dish>() {
-                    @Override
-                    protected void updateItem(Dish item, boolean empty)
-                    {
-                        super.updateItem(item, empty);
+        this.filteredLists = new ArrayList<>();
 
-                        if(empty || item == null)
+        this.views = new ArrayList<>();
+
+        Arrays.stream(DishType.values()).toList().forEach(dishType -> {
+            FilteredList<Dish> newFilteredList = new FilteredList<Dish>(this.dishes);
+            newFilteredList.setPredicate(dish -> dish.category() == dishType);
+            this.filteredLists.add(dishType.ordinal(), newFilteredList);
+
+            ListView<Dish> newView = new ListView<>(newFilteredList);
+            newView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+            this.views.add(newView);
+
+            newView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+            newView.setCellFactory(new Callback<ListView<Dish>, ListCell<Dish>>() {
+
+                /* Overrides the call method to custom-define how cells are created */
+                @Override
+                public ListCell<Dish> call(ListView<Dish> dishListView) {
+                    /* Creates a new ListCell that displays a formatted string for the dish*/
+                    return new ListCell<Dish>() {
+                        @Override
+                        protected void updateItem(Dish item, boolean empty)
                         {
-                            setText(null);
-                            setGraphic(null);
+                            super.updateItem(item, empty);
+
+                            if(empty || item == null)
+                            {
+                                setText(null);
+                                setGraphic(null);
+                            }
+                            else
+                            {
+                                Text content = new Text(item.getDname() + " • "
+                                        + "$" + item.getPrice() +
+                                        "\n" + item.getDescription()
+                                );
+
+                                content.wrappingWidthProperty().bind(newView.widthProperty().add(-40));
+
+                                setWrapText(true);
+
+                                setGraphic(content);
+                            }
                         }
-                        else
-                        {
-                            Text content = new Text(item.getDname() + " • "
-                                    + "$" + item.getPrice() +
-                                    "\n" + item.getDescription()
-                            );
+                    };
+                }
+            });
 
-                            content.wrappingWidthProperty().bind(listView.widthProperty().add(-40));
-
-                            setWrapText(true);
-
-                            setGraphic(content);
-                        }
-                    }
-                };
-            }
+            String categoryString = dishType.toString();
+            Tab newTab = new Tab(categoryString.charAt(0) + categoryString.substring(1).toLowerCase() + "s");
+            newTab.setContent(newView);
+            this.categoryTabs.getTabs().add(newTab);
         });
 
-        this.listView.setItems(this.dishes.subList());
+        this.categoryTabs.getSelectionModel().selectedItemProperty().addListener(
+                (observableValue, tab, t1) -> {
+                    int categoryIndex = categoryTabs.getTabs().indexOf(tab);
+                    views.get(categoryIndex).getSelectionModel().clearSelection();
+                }
+        );
 
         Button addButton = new Button("Add");
-        addButton.setOnAction(e -> letAddItem(this.dishes));
+        addButton.setOnAction(e -> letAddItem());
 
         /* Launch a new edit window for each dish selected for editing */
         Button editButton = new Button("Edit");
-        editButton.setOnAction(e -> this.listView.getSelectionModel()
-                .getSelectedIndices()
-                .forEach(i -> letEditItem(this.dishes, i)));
+
+        editButton.setOnAction(e -> this.letEditItems());
 
         Button removeButton = new Button("Remove");
-        removeButton.setOnAction(e -> this.listView.getSelectionModel().getSelectedItems().forEach(
-                item -> this.dishes.remove(item)
-        ));
+        removeButton.setOnAction(e -> {
+            int selectedTabInd = this.categoryTabs.getSelectionModel().getSelectedIndex();
+            Dish selectedDish = this.views.get(selectedTabInd).getSelectionModel().getSelectedItem();
+            this.dishes.remove(selectedDish);
+        });
 
         ToolBar controls = new ToolBar(
                 addButton,
@@ -89,22 +121,18 @@ class OwnerMenu extends RestaurantScene
 
         controls.setOrientation(Orientation.HORIZONTAL);
 
-        VBox appetizerLayout = new VBox();
-        Tab appetizerTab = new Tab("APPETIZERS");
-        appetizerTab.setContent(appetizerLayout);
-        this.tabs.getTabs().add(appetizerTab);
-        layout.getChildren().add(this.listView);
+        layout = new VBox();
+        layout.getChildren().add(this.categoryTabs);
         layout.getChildren().add(controls);
-        this.scene = new Scene(layout, RestaurantScene.xDim, RestaurantScene.yDim);
     }
 
-    /* Swaps to the menu view on the stage provided */
-    public void display() {
-        stage.setScene(this.scene);
-        stage.show();
+    /* Returns the root element for the menu view, allowing it to be
+    * embedded in a layout */
+    public Pane getAsElement() {
+        return this.layout;
     }
 
-    public void letAddItem(ObservableList<Dish> dishList) {
+    public void letAddItem() {
         Stage addStage = new Stage();
         VBox layout = new VBox();
 
@@ -209,11 +237,11 @@ class OwnerMenu extends RestaurantScene
                         nameResponse,
                         descriptionResponse,
                         price,
-                        "APPETIZER" // TODO: update with appropriate value
+                        DishType.values()[(this.categoryTabs.getSelectionModel().getSelectedIndex())].toString() // TODO: update with appropriate value
                 );
                 // TODO: is the dish automatically displayed in the ListView
                 // upon being added to the underlying ObservableList?
-                dishes.add(newDish);
+                this.dishes.add(newDish);
                 /* Update database with new dish, closing the dish addition window */
                 // TODO: add new entry to database here.
                 addStage.close();
@@ -232,8 +260,20 @@ class OwnerMenu extends RestaurantScene
         addStage.setScene(addScene);
         addStage.show();
     }
+    public void letEditItems() {
+        ListView<Dish> targetView = this.views.get(this.categoryTabs.getSelectionModel().getSelectedIndex());
+        ObservableList<Dish> selectedItems = targetView.getSelectionModel().getSelectedItems();
 
-    public void letEditItem(ObservableList<Dish> dishes, int targetIndex) {
+        selectedItems.forEach(dishToEdit -> letEditItem(this.dishes.indexOf(dishToEdit)));
+    }
+
+    /***
+     * Takes the index of a dish object to modify in the dishes ObservableList and
+     * creates an editing window for that object.
+     * @param targetIndex
+     */
+    public void letEditItem(int targetIndex) {
+
         Dish target = dishes.get(targetIndex);
         Stage addStage = new Stage();
         VBox layout = new VBox();
@@ -336,7 +376,7 @@ class OwnerMenu extends RestaurantScene
                 target.setDescription(descriptionResponse);
                 target.setPrice(price);
 
-                dishes.set(targetIndex, target);
+                this.dishes.set(targetIndex, target);
 
                 /* Update database with new dish, closing the dish addition window */
                 // TODO: add new entry to database here.

@@ -29,7 +29,7 @@ public class RestaurantDB {
         return dishNamesList;
     }
 
-    public List<Dish> getDishes(boolean test, DishType type){
+    public List<Dish> getDishes(boolean test){
         if(test)
         {
             ArrayList<Dish> testDishes = new ArrayList<>();
@@ -47,7 +47,7 @@ public class RestaurantDB {
                     "Pizza",
                     "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.",
                     14.99,
-                    "DINNER"
+                    "ENTREE"
             ));
 
             testDishes.add(new Dish(
@@ -55,7 +55,7 @@ public class RestaurantDB {
                     "Pizza",
                     "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.",
                     14.99,
-                    "DINNER"
+                    "DESSERT"
             ));
             return testDishes;
         }
@@ -67,13 +67,13 @@ public class RestaurantDB {
                     "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
             Statement statement = connect.createStatement();
             ResultSet rs = statement.executeQuery(
-                    "SELECT * FROM Dishes WHERE category = " + type.toString());
+                    "SELECT * FROM Dishes");
             while (rs.next()) {
                 int did = rs.getInt(1);
                 String dName = rs.getString(2);
                 String description = rs.getString(3);
-                double price = rs.getDouble(5);
-                String categoryString = rs.getString(4);
+                double price = rs.getDouble(4);
+                String categoryString = rs.getString(5);
                 Dish d = new Dish(did, dName, description, price, categoryString);
                 dishList.add(d);
             }

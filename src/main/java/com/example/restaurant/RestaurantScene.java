@@ -12,7 +12,7 @@ public abstract class RestaurantScene {
      public static final int yDim = 500;
 
 
-     public abstract void display();
+     public abstract Parent getAsElement();
 
 
 }
