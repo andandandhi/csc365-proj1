@@ -9,8 +9,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RestaurantDB {
-    static   Connection connect;
+    static Connection connect;
 
+    private ObservableList<Dish> DishList;
+    private ObservableList<Employee> EmployeeList;
+    private ObservableList<Table> TableList;
+    private ObservableList<LedgerEntry> Ledger;
+    private ObservableList<Order> OrderList;
+    public RestaurantDB(){
+
+    }
     public List<String> getDishNames(){
         List<String> dishNamesList = new ArrayList<String>();
         try {
