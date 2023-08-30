@@ -1,18 +1,20 @@
 package com.example.restaurant;
 
+import java.sql.Date;
+
 public class LedgerEntry {
     private int lid;
-    private String date; //TODO use Date instead of String
+    private Date date; //TODO use Date instead of String
     private String note;
 
-    public LedgerEntry(int lid, String date, String note, double balance) {
+    private double balance;
+
+    public LedgerEntry(int lid, Date date, String note, double balance) {
         this.lid = lid;
         this.date = date;
         this.note = note;
         this.balance = balance;
     }
-
-    private double balance;
 
 
     public int getLid() {
@@ -23,11 +25,11 @@ public class LedgerEntry {
         this.lid = lid;
     }
 
-    public String getDate() {
+    public Date getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public void setDate(Date date) {
         this.date = date;
     }
 

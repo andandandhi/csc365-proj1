@@ -2,14 +2,23 @@ package com.example.restaurant;
 
 import javafx.collections.ObservableList;
 
+import java.time.LocalDate;
 import java.sql.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class RestaurantDB {
-    static   Connection connect;
+    static Connection connect;
 
+    private ObservableList<Dish> DishList;
+    private ObservableList<Employee> EmployeeList;
+    private ObservableList<Table> TableList;
+    private ObservableList<LedgerEntry> Ledger;
+    private ObservableList<Order> OrderList;
+    public RestaurantDB(){
+
+    }
     public List<String> getDishNames(){
         List<String> dishNamesList = new ArrayList<String>();
         try {
@@ -145,7 +154,7 @@ public class RestaurantDB {
                     "SELECT * FROM Employees");
             while (rs.next()) {
                 int lid = rs.getInt(1);
-                String date = rs.getString(2);
+                Date date = rs.getDate(2);
                 String note = rs.getString(3);
                 double balance = rs.getDouble(4);
                 LedgerEntry l = new LedgerEntry(lid, date, note, balance);
@@ -230,12 +239,17 @@ public class RestaurantDB {
     /**
      * Record total of order prices in the table tuple, clears all orders associated with the table, set table state
      * to served.
-     * //TODO: move declarations into try statements
+     * //TODO: move declarations into try statements, drop orders
      * Modifies:
      * - Tables
      * - Orders
      */
     public double serveAllOrders(List<Order> orderList, Table table) {
+        /** include:
+         * String updateString1 =   "DROP FROM Orders";
+         *             PreparedStatement preparedStatement1 = connect.prepareStatement(updateString1);
+         *             preparedStatement1.executeUpdate();
+         */
         table.setTstate(TableState.SERVED);
         int tid = table.getTid();
         double totalBill = 0;
@@ -276,6 +290,7 @@ public class RestaurantDB {
     }
 
     /**
+     * TODO: clear for specific table
      * Modifies:
      * -Orders
      */
@@ -296,45 +311,133 @@ public class RestaurantDB {
     /**
      * Applies the tip to the table's total. Marks the table as vacant, increments employee's earned
      * attribute, and adds the total * tip quantity. Does NOT remove employee earnings from
-     * balance in the ledger (that occures when employees are paid).
+     * balance in the ledger (that occurs when employees are paid).
      *
      * Modifies:
      * - Tables
      * - Employees
      * - Ledger
+     * TODO: make serveAllOrders modify table.total
+     *
+     * @Args: tip: input 12.3 means a $12.30 tip
      */
-    public void vacateTable() {
-        
+    public void vacateTable(Table table, List<Employee> employeeList, List<LedgerEntry> ledger, double tip) {
+
+
+        int tid = table.getTid();
+        table.setTstate(TableState.VACANT);
+
+        int lid = -1;
+        Date date = Date.valueOf(LocalDate.now());
+        String note = "Table " + table.getTid() + " vacated with subtotal: " +
+                table.getTotal() + "; tip: " + tip;
+
+        double finalBill = table.getTotal() + tip;
+
+        Employee employee = employeeList.get(table.getEid());
+        int eid = employee.getEid();
+        employee.addEarned(tip);
+
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            connect = DriverManager.getConnection(
+                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
+            connect.setAutoCommit(false);
+
+            String updateString1 =  "UPDATE Tables \n" +
+                                    "SET tstate = 'VACANT' \n" +
+                                    "WHERE tid = ? ";
+            PreparedStatement preparedStatement1 = connect.prepareStatement(updateString1);
+            preparedStatement1.setInt(1, tid);
+            preparedStatement1.executeUpdate();
+            //connect.commit();
+
+            String updateString2 =  "INSERT INTO Ledger(ldate, note, balance) \n" +
+                                    "VALUES( ? , ? , ?)";
+            PreparedStatement preparedStatement2 = connect.prepareStatement(updateString2);
+            preparedStatement2.setDate(1, date);
+            preparedStatement2.setString(2, note);
+            preparedStatement2.setDouble(3, finalBill);
+            preparedStatement2.executeUpdate();
+
+            String queryString3 =   "SELECT LAST_INSERT_ID";
+            PreparedStatement preparedStatement3 = connect.prepareStatement(queryString3);
+            ResultSet rs3 = preparedStatement3.executeQuery();
+            lid = rs3.getInt(1);
+
+            String updateString4 =  "UPDATE Employees \n" +
+                                    "SET earned = earned + ? \n" +
+                                    "WHERE eid = ?";
+            PreparedStatement preparedStatement4 = connect.prepareStatement(updateString4);
+            preparedStatement4.setDouble(1, tip);
+            preparedStatement4.setInt(2, eid);
+            ResultSet rs4 = preparedStatement4.executeQuery();
+            lid = rs4.getInt(1);
+
+            connect.commit();
+
+            connect.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        ledger.add(new LedgerEntry(lid, date, note, finalBill));
     }
 
     /**
      * Decrements the employee's earned amount and records the changes in the ledger.
      *
-     * DOES NOT WORK!
      *
      * Modifies:
      * - Employees
      * - Ledger
      * TODO: decide Ledger or List<LedgerEntry>
      */
-    public void payEmployee(Employee employee, List<LedgerEntry> ledger, LedgerEntry ledgerEntry) {
-//        int eid = employee.getEid();
-//        ledger.add(ledgerEntry);
-//
-//        try {
-//            Class.forName("com.mysql.jdbc.Driver");
-//            connect = DriverManager.getConnection(
-//                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
-//            String updateString =   "UPDATE Tables\n" +
-//                    "SET tstate = 'ORDERING', eid = ? \n" +
-//                    "WHERE tid = ?";
-//            PreparedStatement preparedStatement = connect.prepareStatement(updateString);
-//            preparedStatement.setInt(1, eid);
-//            preparedStatement.setInt(2, tid);
-//            preparedStatement.executeUpdate();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+    public void payEmployee(Employee employee, List<LedgerEntry> ledger) {
+        int eid = employee.getEid();
+        String ename = employee.getEname();
+        double earned = employee.getEarned();
+        employee.setEarned(0);
+
+        int lid = -1;
+        double tipsPaid = earned * -1;
+        Date date = Date.valueOf(LocalDate.now());
+        String note = "Employee(" + eid + ", " + ename + ") was paid on " + date +
+                ", for: $" + earned;
+
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            connect = DriverManager.getConnection(
+                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
+            connect.setAutoCommit(false);
+
+            String updateString1 =   "UPDATE Employees\n" +
+                                    "SET earned = 0 \n" +
+                                    "WHERE eid = ?";
+            PreparedStatement preparedStatement1 = connect.prepareStatement(updateString1);
+            preparedStatement1.setInt(1, eid);
+            preparedStatement1.executeUpdate();
+
+            String updateString2 =  "INSERT INTO Ledger(ldate, note, balance) \n" +
+                                    "VALUES( ? , ? , ?)";
+            PreparedStatement preparedStatement2 = connect.prepareStatement(updateString2);
+            preparedStatement2.setDate(1, date);
+            preparedStatement2.setString(2, note);
+            preparedStatement2.setDouble(3, tipsPaid);
+            preparedStatement2.executeUpdate();
+
+            String queryString3 =   "SELECT LAST_INSERT_ID";
+            PreparedStatement preparedStatement3 = connect.prepareStatement(queryString3);
+            ResultSet rs3 = preparedStatement3.executeQuery();
+            lid = rs3.getInt(1);
+
+            connect.commit();
+            connect.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        ledger.add(new LedgerEntry(lid, date, note, tipsPaid));
     }
 
     public static void main(String[] args) {

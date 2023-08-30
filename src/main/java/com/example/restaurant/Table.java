@@ -4,15 +4,15 @@ public class Table {
     private int tid;
     private int eid;
     private int seats;
-    private double charge;
+    private double total;
 
     private TableState tstate;
 
-    public Table(int tid, int eid, int seats, double charge, String tstate) {
+    public Table(int tid, int eid, int seats, double total, String tstate) {
         this.tid = tid;
         this.eid = eid;
         this.seats = seats;
-        this.charge = charge;
+        this.total = total;
         this.tstate = TableState.valueOf(tstate);
     }
 
@@ -40,12 +40,12 @@ public class Table {
         this.seats = seats;
     }
 
-    public double getCharge() {
-        return charge;
+    public double getTotal() {
+        return total;
     }
 
-    public void setCharge(double charge) {
-        this.charge = charge;
+    public void setTotal(double total) {
+        this.total = total;
     }
 
     public TableState getTstate() {
@@ -62,7 +62,7 @@ public class Table {
                 "tid=" + tid +
                 ", eid=" + eid +
                 ", seats=" + seats +
-                ", charge=" + charge +
+                ", charge=" + total +
                 ", tstate=" + tstate +
                 '}';
     }
