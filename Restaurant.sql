@@ -2,8 +2,8 @@ CREATE TABLE Dishes(
    did INTEGER PRIMARY KEY AUTO_INCREMENT,
    dname VARCHAR(64),
    description VARCHAR(1024),
-   category VARCHAR(16),
-   price DOUBLE
+   price DOUBLE,
+   category VARCHAR(16)
    );
 
 CREATE TABLE Employees(
