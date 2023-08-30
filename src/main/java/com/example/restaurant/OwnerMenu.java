@@ -14,18 +14,18 @@ import javafx.util.Callback;
 import java.util.List;
 import java.util.StringJoiner;
 
-class CustomerMenu extends RestaurantScene
+class OwnerMenu extends RestaurantScene
 {
     private Stage stage;
     private ListView<Dish> listView;
-    private ObservableList<Dish> dishes;
+    private TabPane tabs;
     private Scene scene;
 
-    public CustomerMenu(List<Dish> dishes, Stage stage)
+    public OwnerMenu(RestaurantDB restaurantDB , Stage stage)
     {
         this.stage = stage;
         this.listView = new ListView<>();
-        this.dishes = FXCollections.observableList(dishes);
+        this.dishes = FXCollections.observableList(restaurantDB.getDishes(false));
 
         listView.prefWidthProperty().bind(stage.widthProperty());
         listView.prefHeightProperty().bind(stage.heightProperty());
@@ -54,7 +54,7 @@ class CustomerMenu extends RestaurantScene
                                     "\n" + item.getDescription()
                             );
 
-                            content.wrappingWidthProperty().bind(listView.widthProperty().add(-20));
+                            content.wrappingWidthProperty().bind(listView.widthProperty().add(-40));
 
                             setWrapText(true);
 
@@ -65,7 +65,7 @@ class CustomerMenu extends RestaurantScene
             }
         });
 
-        this.listView.setItems(this.dishes);
+        this.listView.setItems(this.dishes.subList());
 
         Button addButton = new Button("Add");
         addButton.setOnAction(e -> letAddItem(this.dishes));
@@ -89,7 +89,10 @@ class CustomerMenu extends RestaurantScene
 
         controls.setOrientation(Orientation.HORIZONTAL);
 
-        VBox layout = new VBox();
+        VBox appetizerLayout = new VBox();
+        Tab appetizerTab = new Tab("APPETIZERS");
+        appetizerTab.setContent(appetizerLayout);
+        this.tabs.getTabs().add(appetizerTab);
         layout.getChildren().add(this.listView);
         layout.getChildren().add(controls);
         this.scene = new Scene(layout, RestaurantScene.xDim, RestaurantScene.yDim);
@@ -131,7 +134,7 @@ class CustomerMenu extends RestaurantScene
         gp.add(descriptionField, 1, 2);
 
         /* Sets the width of the label column to the width of the description
-         * label (the longest label of the three) */
+        * label (the longest label of the three) */
         ColumnConstraints labelCol = new ColumnConstraints(descriptionText.getPrefWidth());
         labelCol.setHgrow(Priority.NEVER);
         /* Allows the second column to fill remaining space. */
@@ -141,7 +144,7 @@ class CustomerMenu extends RestaurantScene
         gp.getColumnConstraints().add(fieldCol);
 
         /* Constrains the first two rows to one line and allows
-         * the description to fill remaining space. */
+        * the description to fill remaining space. */
         RowConstraints nameRow = new RowConstraints();
         gp.getRowConstraints().add(nameRow);
 

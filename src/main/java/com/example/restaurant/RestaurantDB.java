@@ -1,5 +1,7 @@
 package com.example.restaurant;
 
+import javafx.collections.ObservableList;
+
 import java.sql.*;
 
 import java.util.ArrayList;
@@ -27,7 +29,37 @@ public class RestaurantDB {
         return dishNamesList;
     }
 
-    public List<Dish> getDishes(){
+    public List<Dish> getDishes(boolean test, DishType type){
+        if(test)
+        {
+            ArrayList<Dish> testDishes = new ArrayList<>();
+
+            testDishes.add(new Dish(
+                    1,
+                    "Pizza",
+                    "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.",
+                    14.99,
+                    "APPETIZER"
+            ));
+
+            testDishes.add(new Dish(
+                    1,
+                    "Pizza",
+                    "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.",
+                    14.99,
+                    "DINNER"
+            ));
+
+            testDishes.add(new Dish(
+                    1,
+                    "Pizza",
+                    "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.",
+                    14.99,
+                    "DINNER"
+            ));
+            return testDishes;
+        }
+
         List<Dish> dishList = new ArrayList<Dish>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -35,13 +67,13 @@ public class RestaurantDB {
                     "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
             Statement statement = connect.createStatement();
             ResultSet rs = statement.executeQuery(
-                    "SELECT * FROM Dishes");
+                    "SELECT * FROM Dishes WHERE category = " + type.toString());
             while (rs.next()) {
                 int did = rs.getInt(1);
                 String dName = rs.getString(2);
                 String description = rs.getString(3);
-                double price = rs.getDouble(4);
-                String categoryString = rs.getString(5);
+                double price = rs.getDouble(5);
+                String categoryString = rs.getString(4);
                 Dish d = new Dish(did, dName, description, price, categoryString);
                 dishList.add(d);
             }
