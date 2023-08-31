@@ -11,11 +11,11 @@ import java.util.List;
 public class RestaurantDB {
     static Connection connect;
 
-    private ObservableList<Dish> DishList;
-    private ObservableList<Employee> EmployeeList;
-    private ObservableList<Table> TableList;
-    private ObservableList<LedgerEntry> Ledger;
-    private ObservableList<Order> OrderList;
+    private ObservableList<Dish> dishes;
+    private ObservableList<Employee> employees;
+    private ObservableList<Table> tables;
+    private ObservableList<LedgerEntry> ledgerEntries;
+    private ObservableList<Order> orders;
     public RestaurantDB(){
 
     }
@@ -69,7 +69,7 @@ public class RestaurantDB {
             return testDishes;
         }
 
-        List<Dish> dishList = new ArrayList<Dish>();
+        List<Dish> dishList = new ArrayList<>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
             connect = DriverManager.getConnection(
@@ -93,7 +93,7 @@ public class RestaurantDB {
     }
 
     public List<Employee> getEmployees(){
-        List<Employee> employeeList = new ArrayList<Employee>();
+        List<Employee> employeeList = new ArrayList<>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
             connect = DriverManager.getConnection(
@@ -116,7 +116,7 @@ public class RestaurantDB {
     }
 
     public List<Table> getTables(){
-        List<Table> tableList = new ArrayList<Table>();
+        List<Table> tableList = new ArrayList<>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
             connect = DriverManager.getConnection(
@@ -144,7 +144,7 @@ public class RestaurantDB {
      * TODO: use prepared statements
      */
     public List<LedgerEntry> getLedgerEntries(){
-        List<LedgerEntry> ledgerList = new ArrayList<LedgerEntry>();
+        List<LedgerEntry> ledgerList = new ArrayList<>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
             connect = DriverManager.getConnection(
@@ -179,9 +179,11 @@ public class RestaurantDB {
             Class.forName("com.mysql.jdbc.Driver");
             connect = DriverManager.getConnection(
                     "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
-            String updateString =   "UPDATE Tables\n" +
-                                    "SET tstate = 'ORDERING', eid = ? \n" +
-                                    "WHERE tid = ?";
+            String updateString = """
+                    UPDATE Tables
+                    SET tstate = 'ORDERING', eid = ?
+                    WHERE tid = ?
+                    """;
             PreparedStatement preparedStatement = connect.prepareStatement(updateString);
             preparedStatement.setInt(1, eid);
             preparedStatement.setInt(2, tid);
@@ -208,8 +210,10 @@ public class RestaurantDB {
                 Class.forName("com.mysql.jdbc.Driver");
                 connect = DriverManager.getConnection(
                         "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
-                String updateString =   "INSERT INTO Orders\n" +
-                                        "VALUES( ? , ? )";
+                String updateString =  """
+                                       INSERT INTO Orders
+                                       VALUES( ? , ? )
+                                       """;
                 PreparedStatement preparedStatement = connect.prepareStatement(updateString);
                 preparedStatement.setInt(1, table.getTid());
                 preparedStatement.setInt(2, DishList.get(i).getDid());
@@ -410,15 +414,19 @@ public class RestaurantDB {
                     "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
             connect.setAutoCommit(false);
 
-            String updateString1 =   "UPDATE Employees\n" +
-                                    "SET earned = 0 \n" +
-                                    "WHERE eid = ?";
+            String updateString1 = """
+                    UPDATE Employees
+                    SET earned = 0\s
+                    WHERE eid = ?
+                    """;
             PreparedStatement preparedStatement1 = connect.prepareStatement(updateString1);
             preparedStatement1.setInt(1, eid);
             preparedStatement1.executeUpdate();
 
-            String updateString2 =  "INSERT INTO Ledger(ldate, note, balance) \n" +
-                                    "VALUES( ? , ? , ?)";
+            String updateString2 =  """
+                                    INSERT INTO Ledger(ldate, note, balance) \n" +
+                                    VALUES( ? , ? , ?)
+                                    """;
             PreparedStatement preparedStatement2 = connect.prepareStatement(updateString2);
             preparedStatement2.setDate(1, date);
             preparedStatement2.setString(2, note);
