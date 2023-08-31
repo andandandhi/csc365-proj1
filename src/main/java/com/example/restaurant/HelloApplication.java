@@ -29,7 +29,9 @@ public class HelloApplication extends Application {
 
             try {
                 this.stop();
-            } catch(Exception e1) { }
+            } catch(Exception e1) {
+                e1.printStackTrace();
+            }
         }
 
         OwnerMenu ownerMenu = new OwnerMenu(restaurantDB);

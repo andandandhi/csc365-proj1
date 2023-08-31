@@ -19,17 +19,18 @@ import java.util.StringJoiner;
 class OwnerMenu extends RestaurantScene
 {
     private final ArrayList<ListView<Dish>> views;
-    private final ObservableList<Dish> dishes;
     private final TabPane categoryTabs;
     private ArrayList<FilteredList<Dish>> filteredLists;
 
     private final Pane layout;
 
+    private final RestaurantDB restaurantDB;
+
     public OwnerMenu(RestaurantDB restaurantDB)
     {
-        this.categoryTabs = new TabPane();
+        this.restaurantDB = restaurantDB;
 
-        this.dishes = FXCollections.observableList(restaurantDB.getDishes());
+        this.categoryTabs = new TabPane();
 
 //        this.categoryTabs.prefWidthProperty().bind(t.getTabPane().widthProperty());
 //        this.categoryTabs.prefHeightProperty().bind(stage.heightProperty());
@@ -39,7 +40,7 @@ class OwnerMenu extends RestaurantScene
         this.views = new ArrayList<>();
 
         Arrays.stream(DishType.values()).toList().forEach(dishType -> {
-            FilteredList<Dish> newFilteredList = new FilteredList<Dish>(this.dishes);
+            FilteredList<Dish> newFilteredList = new FilteredList<>(restaurantDB.getDishes());
             newFilteredList.setPredicate(dish -> dish.getCategory() == dishType);
             this.filteredLists.add(dishType.ordinal(), newFilteredList);
 
@@ -48,25 +49,21 @@ class OwnerMenu extends RestaurantScene
             this.views.add(newView);
 
             newView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-            newView.setCellFactory(new Callback<ListView<Dish>, ListCell<Dish>>() {
+            newView.setCellFactory(new Callback<>() {
 
                 /* Overrides the call method to custom-define how cells are created */
                 @Override
                 public ListCell<Dish> call(ListView<Dish> dishListView) {
                     /* Creates a new ListCell that displays a formatted string for the dish*/
-                    return new ListCell<Dish>() {
+                    return new ListCell<>() {
                         @Override
-                        protected void updateItem(Dish item, boolean empty)
-                        {
+                        protected void updateItem(Dish item, boolean empty) {
                             super.updateItem(item, empty);
 
-                            if(empty || item == null)
-                            {
+                            if (empty || item == null) {
                                 setText(null);
                                 setGraphic(null);
-                            }
-                            else
-                            {
+                            } else {
                                 Text content = new Text(item.getDname() + " • "
                                         + "$" + item.getPrice() +
                                         "\n" + item.getDescription()
@@ -108,7 +105,7 @@ class OwnerMenu extends RestaurantScene
         removeButton.setOnAction(e -> {
             int selectedTabInd = this.categoryTabs.getSelectionModel().getSelectedIndex();
             Dish selectedDish = this.views.get(selectedTabInd).getSelectionModel().getSelectedItem();
-            this.dishes.remove(selectedDish);
+            restaurantDB.getDishes().remove(selectedDish);
         });
 
         ToolBar controls = new ToolBar(
@@ -239,7 +236,7 @@ class OwnerMenu extends RestaurantScene
                 );
                 // TODO: is the dish automatically displayed in the ListView
                 // upon being added to the underlying ObservableList?
-                this.dishes.add(newDish);
+                this.restaurantDB.getDishes().add(newDish);
                 /* Update database with new dish, closing the dish addition window */
                 // TODO: add new entry to database here.
                 addStage.close();
@@ -262,17 +259,15 @@ class OwnerMenu extends RestaurantScene
         ListView<Dish> targetView = this.views.get(this.categoryTabs.getSelectionModel().getSelectedIndex());
         ObservableList<Dish> selectedItems = targetView.getSelectionModel().getSelectedItems();
 
-        selectedItems.forEach(dishToEdit -> letEditItem(this.dishes.indexOf(dishToEdit)));
+        selectedItems.forEach(this::letEditItem);
     }
 
     /***
      * Takes the index of a dish object to modify in the dishes ObservableList and
      * creates an editing window for that object.
-     * @param targetIndex
+     * @param dish
      */
-    public void letEditItem(int targetIndex) {
-
-        Dish target = dishes.get(targetIndex);
+    public void letEditItem(Dish dish) {
         Stage addStage = new Stage();
         VBox layout = new VBox();
 
@@ -282,15 +277,15 @@ class OwnerMenu extends RestaurantScene
         gp.setPadding(new Insets(6, 6, 6, 6));
 
         Label nameText = new Label("Name");
-        TextField nameField = new TextField(target.getDname());
+        TextField nameField = new TextField(dish.getDname());
         nameField.maxWidth(Double.MAX_VALUE);
 
         Label priceText = new Label("Price");
-        TextField priceField = new TextField(String.valueOf(target.getPrice()));
+        TextField priceField = new TextField(String.valueOf(dish.getPrice()));
         priceField.prefWidth(300);
 
         Label descriptionText = new Label("Description");
-        TextArea descriptionField = new TextArea(target.getDescription());
+        TextArea descriptionField = new TextArea(dish.getDescription());
         descriptionField.prefWidth(300);
         descriptionField.setWrapText(true);
 
@@ -369,16 +364,7 @@ class OwnerMenu extends RestaurantScene
                 new Alert(Alert.AlertType.INFORMATION, errorMessage.toString()).show();
             }
             else {
-
-                target.setDname(nameResponse);
-                target.setDescription(descriptionResponse);
-                target.setPrice(price);
-
-                this.dishes.set(targetIndex, target);
-
-                /* Update database with new dish, closing the dish addition window */
-                // TODO: add new entry to database here.
-
+                this.restaurantDB.editDish(dish, nameResponse, descriptionResponse, price, dish.getCategory());
                 addStage.close();
             }
         });
