@@ -31,7 +31,7 @@ class OwnerMenu extends RestaurantScene
     {
         this.categoryTabs = new TabPane();
 
-        this.dishes = FXCollections.observableList(restaurantDB.getDishes(false));
+        this.dishes = FXCollections.observableList(restaurantDB.getDishes());
 
 //        this.categoryTabs.prefWidthProperty().bind(t.getTabPane().widthProperty());
 //        this.categoryTabs.prefHeightProperty().bind(stage.heightProperty());

@@ -1,5 +1,6 @@
 package com.example.restaurant;
 
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 import java.time.LocalDate;
@@ -10,64 +11,24 @@ import java.util.List;
 
 public class RestaurantDB {
     static Connection connect;
-
     private ObservableList<Dish> dishes;
     private ObservableList<Employee> employees;
     private ObservableList<Table> tables;
     private ObservableList<LedgerEntry> ledgerEntries;
-    private ObservableList<Order> orders;
+    
     public RestaurantDB(){
-
-    }
-    public List<String> getDishNames(){
-        List<String> dishNamesList = new ArrayList<String>();
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            connect = DriverManager.getConnection(
-                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
-            Statement statement = connect.createStatement();
-            ResultSet rs = statement.executeQuery(
-                    "SELECT * FROM Dishes");
-            while (rs.next()) {
-                String dName = rs.getString(2);
-                dishNamesList.add(dName);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return dishNamesList;
+        dishes = FXCollections.observableList(getDishes());
+        employees = FXCollections.observableList(getEmployees());
+        tables = FXCollections.observableList(getTables());
+        ledgerEntries = FXCollections.observableList(getLedgerEntries());
     }
 
-    public List<Dish> getDishes(boolean test){
-        if(test)
-        {
-            ArrayList<Dish> testDishes = new ArrayList<>();
+    public void updateDish(Dish dish, String dname, String description, double price, DishType category)
+    {
 
-            testDishes.add(new Dish(
-                    1,
-                    "Pizza",
-                    "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.",
-                    14.99,
-                    "APPETIZER"
-            ));
+    }
 
-            testDishes.add(new Dish(
-                    1,
-                    "Pizza",
-                    "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.",
-                    14.99,
-                    "ENTREE"
-            ));
-
-            testDishes.add(new Dish(
-                    1,
-                    "Pizza",
-                    "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.",
-                    14.99,
-                    "DESSERT"
-            ));
-            return testDishes;
-        }
+    public List<Dish> getDishes() {
 
         List<Dish> dishList = new ArrayList<>();
         try {
@@ -151,7 +112,7 @@ public class RestaurantDB {
                     "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
             Statement statement = connect.createStatement();
             ResultSet rs = statement.executeQuery(
-                    "SELECT * FROM Employees");
+                    "SELECT * FROM Ledger");
             while (rs.next()) {
                 int lid = rs.getInt(1);
                 Date date = rs.getDate(2);
@@ -168,6 +129,8 @@ public class RestaurantDB {
 
     /**
      * Assign server to a table. Set table state to Ordering
+     * 
+     * Use: tid, eid
      */
     public void assignServer(Table table, Employee employee) {
         table.setTstate(TableState.ORDERING);

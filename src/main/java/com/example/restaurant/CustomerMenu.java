@@ -31,7 +31,7 @@ class CustomerMenu
 
         this.categoryTabs = new TabPane();
 
-        this.dishes = FXCollections.observableList(restaurantDB.getDishes(false));
+        this.dishes = FXCollections.observableList(restaurantDB.getDishes());
 
         this.categoryTabs.prefWidthProperty().bind(stage.widthProperty());
         this.categoryTabs.prefHeightProperty().bind(stage.heightProperty());
