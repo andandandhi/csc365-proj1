@@ -1,10 +1,4 @@
-DROP TABLE Orders;
-DROP TABLE Tables;
-DROP TABLE Dishes;
-DROP TABLE Ledger;
-DROP TABLE Employees;
-
-
+USE restaurant;
 
 insert into Dishes (did, dname, category, description, price)
 values
@@ -19,7 +13,7 @@ values
 (9, 'Spaghetti Bolognese','ENTREE', 'Spaghetti served with a rich and hearty Bolognese sauce made from minced meat, tomatoes, onions, carrots, celery, and red wine', 13.50),
 (10, 'Ossobuco','ENTREE', 'A Milanese specialty made from braised veal shanks, typically cooked with white wine, broth, onions, carrots, celery, and gremolata (a mixture of lemon zest, garlic, and parsley)', 27.99),
 (11, 'Tiramisu', 'DESSERT', 'A popular dessert made with layers of coffee-soaked ladyfingers (sponge biscuits), mascarpone cheese, cocoa powder, and sometimes a touch of liqueur', 8.99),
-(12,'Soda','Drinks', 'Assorted carbonated soft drinks', 2.50 ),
+(12,'Soda','DRINK', 'Assorted carbonated soft drinks', 2.50 ),
 (13,'Iced Tea','DRINK', 'Chilled brewed tea with ice and optional lemon', 2.75),
 (14,'Lemonade','DRINK', 'Freshly squeezed lemon juice, sugar, and water', 3.00),
 (15,'Cappuccino','DRINK', 'Espresso mixed with hot milk and topped with steamed milk foam', 4.25),

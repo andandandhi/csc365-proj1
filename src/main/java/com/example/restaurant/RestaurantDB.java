@@ -44,6 +44,7 @@ public class RestaurantDB {
                     """
                     UPDATE Dishes
                     SET dname = ?, description = ?, price = ?, category = ?
+                    WHERE did = ?
                     """
             );
 
@@ -51,11 +52,11 @@ public class RestaurantDB {
             pStatement.setString(2, description);
             pStatement.setDouble(3, price);
             pStatement.setString(4, category.toString());
+            pStatement.setInt(5, dish.getDid());
 
             pStatement.executeUpdate();
 
             getConnect().commit();
-            getConnect().close();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -66,7 +67,7 @@ public class RestaurantDB {
         dish.setPrice(price);
         dish.setCategory(category);
 
-        this.getDishes().add(this.getDishes().indexOf(dish), dish);
+        this.getDishes().set(this.getDishes().indexOf(dish), dish);
     }
 
     public void addDish(Dish dish) {
@@ -78,8 +79,6 @@ public class RestaurantDB {
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            setConnect(DriverManager.getConnection(
-                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365"));
             String updateString1 =  """
                                     INSERT INTO Dishes(dname, description, price, category)
                                     VALUES( ? , ? , ? , ? )
@@ -97,7 +96,6 @@ public class RestaurantDB {
             ResultSet rs2 = preparedStatement2.executeQuery();
             rs2.getInt(1);
             getConnect().commit();
-            getConnect().close();
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -117,8 +115,6 @@ public class RestaurantDB {
         List<Dish> dishList = new ArrayList<>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            setConnect(DriverManager.getConnection(
-                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365"));
             String updateString1 =  """
                                     DELETE FROM Dishes
                                     WHERE did = ?
@@ -128,7 +124,6 @@ public class RestaurantDB {
             preparedStatement1.executeUpdate();
 
             getConnect().commit();
-            getConnect().close();
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -175,8 +170,6 @@ public class RestaurantDB {
         List<Dish> dishList = new ArrayList<>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            setConnect(DriverManager.getConnection(
-                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365"));
             Statement statement = getConnect().createStatement();
             ResultSet rs = statement.executeQuery(
                     "SELECT * FROM Dishes");
@@ -184,8 +177,8 @@ public class RestaurantDB {
                 int did = rs.getInt(1);
                 String dName = rs.getString(2);
                 String description = rs.getString(3);
-                double price = rs.getDouble(4);
-                String categoryString = rs.getString(5);
+                double price = rs.getDouble(5);
+                String categoryString = rs.getString(4);
                 Dish d = new Dish(did, dName, description, price, categoryString);
                 dishList.add(d);
             }
@@ -199,8 +192,6 @@ public class RestaurantDB {
         List<Employee> employeeList = new ArrayList<>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            setConnect(DriverManager.getConnection(
-                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365"));
             Statement statement = getConnect().createStatement();
             ResultSet rs = statement.executeQuery(
                     "SELECT * FROM Employees");
@@ -223,8 +214,6 @@ public class RestaurantDB {
         List<Table> tableList = new ArrayList<>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            setConnect(DriverManager.getConnection(
-                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365"));
             Statement statement = getConnect().createStatement();
             ResultSet rs = statement.executeQuery(
                     "SELECT * FROM Tables");
@@ -251,8 +240,6 @@ public class RestaurantDB {
         List<LedgerEntry> ledgerList = new ArrayList<>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            setConnect(DriverManager.getConnection(
-                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365"));
             Statement statement = getConnect().createStatement();
             ResultSet rs = statement.executeQuery(
                     "SELECT * FROM Ledger");
@@ -281,8 +268,6 @@ public class RestaurantDB {
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            setConnect(DriverManager.getConnection(
-                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365"));
             String updateString = """
                     UPDATE Tables
                     SET tstate = 'ORDERING', eid = ?
@@ -299,7 +284,7 @@ public class RestaurantDB {
         table.setTstate(TableState.ORDERING);
         table.setEid(eid);
 
-        this.getTables().add(this.getTables().indexOf(table), table);
+        this.getTables().set(this.getTables().indexOf(table), table);
     }
 
     /**
@@ -320,8 +305,6 @@ public class RestaurantDB {
         for(int i = 0; i < dishList.size(); i++){
             try {
                 Class.forName("com.mysql.jdbc.Driver");
-                setConnect(DriverManager.getConnection(
-                        "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365"));
                 String updateString =  """
                                        INSERT INTO Orders
                                        VALUES( ? , ? )
@@ -336,8 +319,6 @@ public class RestaurantDB {
             }
             try {
                 Class.forName("com.mysql.jdbc.Driver");
-                setConnect(DriverManager.getConnection(
-                        "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365"));
                 String updateString =   "UPDATE Tables\n" +
                                         "SET State = 'WAITING'" +
                                         "WHERE tid = ? ";
@@ -349,7 +330,7 @@ public class RestaurantDB {
                 e.printStackTrace();
             }
 
-            this.getTables().add(this.getTables().indexOf(table), table);
+            this.getTables().set(this.getTables().indexOf(table), table);
         }
     }
 
@@ -374,8 +355,6 @@ public class RestaurantDB {
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            setConnect(DriverManager.getConnection(
-                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365"));
             String updateString =
                     "UPDATE Tables\n" +
                     "SET State = 'SERVED'" +
@@ -388,8 +367,6 @@ public class RestaurantDB {
         }
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            setConnect(DriverManager.getConnection(
-                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365"));
             String queryString = """
                     SELECT SUM(Dishes.price)
                     FROM Orders
@@ -410,7 +387,7 @@ public class RestaurantDB {
         table.setTstate(TableState.SERVED);
         table.setTotal(totalBill);
 
-        this.getTables().add(this.getTables().indexOf(table), table);
+        this.getTables().set(this.getTables().indexOf(table), table);
     }
 
 
@@ -444,8 +421,6 @@ public class RestaurantDB {
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            setConnect(DriverManager.getConnection(
-                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365"));
             getConnect().setAutoCommit(false);
 
             String updateString1 = """
@@ -480,8 +455,6 @@ public class RestaurantDB {
             lid = rs4.getInt(1);
 
             getConnect().commit();
-
-            getConnect().close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -517,8 +490,6 @@ public class RestaurantDB {
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            setConnect(DriverManager.getConnection(
-                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365"));
             getConnect().setAutoCommit(false);
 
             String updateString1 = """
@@ -546,7 +517,6 @@ public class RestaurantDB {
             lid = rs3.getInt(1);
 
             getConnect().commit();
-            getConnect().close();
 
         } catch (Exception e) {
             e.printStackTrace();
