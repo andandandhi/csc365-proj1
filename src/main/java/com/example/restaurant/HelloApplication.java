@@ -2,6 +2,7 @@ package com.example.restaurant;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.layout.VBox;
@@ -17,7 +18,19 @@ public class HelloApplication extends Application {
 
         stage.setTitle("Jim's Burgers");
 
-        RestaurantDB restaurantDB = new RestaurantDB();
+        RestaurantDB restaurantDB = null;
+        try {
+            restaurantDB = new RestaurantDB();
+        } catch(Exception e) {
+            Alert a = new Alert(Alert.AlertType.ERROR);
+            a.setHeaderText("Error.");
+            a.setTitle("Error");
+            a.setContentText("Could not connect to remote database.");
+
+            try {
+                this.stop();
+            } catch(Exception e1) { }
+        }
 
         OwnerMenu ownerMenu = new OwnerMenu(restaurantDB);
 

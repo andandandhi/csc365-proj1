@@ -11,24 +11,158 @@ import java.util.List;
 
 public class RestaurantDB {
     static Connection connect;
-    private ObservableList<Dish> dishes;
-    private ObservableList<Employee> employees;
-    private ObservableList<Table> tables;
-    private ObservableList<LedgerEntry> ledgerEntries;
+    public final ObservableList<Dish> dishes;
+    public final ObservableList<Employee> employees;
+    public final ObservableList<Table> tables;
+    public final ObservableList<LedgerEntry> ledgerEntries;
     
-    public RestaurantDB(){
-        dishes = FXCollections.observableList(getDishes());
-        employees = FXCollections.observableList(getEmployees());
-        tables = FXCollections.observableList(getTables());
-        ledgerEntries = FXCollections.observableList(getLedgerEntries());
+    public RestaurantDB() throws SQLException {
+        connect = DriverManager.getConnection(
+                "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
+
+        dishes = FXCollections.observableList(fetchDishes());
+        employees = FXCollections.observableList(fetchEmployees());
+        tables = FXCollections.observableList(fetchTables());
+        ledgerEntries = FXCollections.observableList(fetchLedgerEntries());
     }
 
-    public void updateDish(Dish dish, String dname, String description, double price, DishType category)
+    public void editDish(Dish dish, String dname, String description, double price, DishType category)
     {
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            connect.setAutoCommit(false);
+
+            PreparedStatement pStatement = connect.prepareStatement(
+                    """
+                    UPDATE Dishes
+                    SET dname = ?, description = ?, price = ?, category = ?
+                    """
+            );
+
+            pStatement.setString(1, dname);
+            pStatement.setString(2, description);
+            pStatement.setDouble(3, price);
+            pStatement.setString(4, category.toString());
+
+            pStatement.executeUpdate();
+
+            connect.commit();
+            connect.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        dish.setDname(dname);
+        dish.setDescription(description);
+        dish.setPrice(price);
+        dish.setCategory(category);
+
+        this.dishes.add(this.dishes.indexOf(dish), dish);
+    }
+
+    public void addDish(Dish dish) {
+        int did = -1;
+        String dname = dish.getDname();
+        String description = dish.getDescription();
+        double price = dish.getPrice();
+        String category = dish.getCategory().toString();
+
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            connect = DriverManager.getConnection(
+                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
+            String updateString1 =  """
+                                    INSERT INTO Dishes(dname, description, price, category)
+                                    VALUES( ? , ? , ? , ? )
+                                    """;
+            PreparedStatement preparedStatement1 = connect.prepareStatement(updateString1);
+            preparedStatement1.setString(1, dname);
+            preparedStatement1.setString(2, description);
+            preparedStatement1.setDouble(3, price);
+            preparedStatement1.setString(4, category);
+            preparedStatement1.executeUpdate();
+
+            String queryString2 = """
+                    SELECT LAST_INSERT_ID """;
+            PreparedStatement preparedStatement2 = connect.prepareStatement(queryString2);
+            ResultSet rs2 = preparedStatement2.executeQuery();
+            rs2.getInt(1);
+            connect.commit();
+            connect.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        dish.setDid(did);
+        dishes.add(dish);
+    }
+
+    public void removeDish(Dish dish) {
+        int did = dish.getDid();
+        String dname = dish.getDname();
+        String description = dish.getDescription();
+        double price = dish.getPrice();
+        String category = dish.getCategory().toString();
+
+        List<Dish> dishList = new ArrayList<>();
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            connect = DriverManager.getConnection(
+                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
+            String updateString1 =  """
+                                    DELETE FROM Dishes
+                                    WHERE did = ?
+                                    """;
+            PreparedStatement preparedStatement1 = connect.prepareStatement(updateString1);
+            preparedStatement1.setInt(1, did);
+            preparedStatement1.executeUpdate();
+
+            connect.commit();
+            connect.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        dishes.remove(dish);
+    }
+
+    public void addEmployee(Employee employee) {
 
     }
 
-    public List<Dish> getDishes() {
+    public void removeEmployee(Employee employee) {
+
+    }
+
+    /**
+     * Modifies:
+     * - LedgerEntries
+     * - Employees
+     */
+    public void addOwed(Employee employee, double addition) {
+
+    }
+
+    public void addLedgerEntry(LedgerEntry ledgerEntry) {
+
+    }
+
+    public void removeOrder(Table table, int index) {
+
+    }
+
+    public void removeTable(Table table) {
+
+    }
+
+    public void addTable(Table table) {
+
+    }
+
+    private List<Dish> fetchDishes() {
 
         List<Dish> dishList = new ArrayList<>();
         try {
@@ -53,7 +187,7 @@ public class RestaurantDB {
         return dishList;
     }
 
-    public List<Employee> getEmployees(){
+    public List<Employee> fetchEmployees(){
         List<Employee> employeeList = new ArrayList<>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -76,7 +210,8 @@ public class RestaurantDB {
         return employeeList;
     }
 
-    public List<Table> getTables(){
+    public List<Table> fetchTables(){
+        // TODO: load order data into tables' dishes (ObservableList) property
         List<Table> tableList = new ArrayList<>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -104,7 +239,7 @@ public class RestaurantDB {
      * does not include running balance
      * TODO: use prepared statements
      */
-    public List<LedgerEntry> getLedgerEntries(){
+    public List<LedgerEntry> fetchLedgerEntries(){
         List<LedgerEntry> ledgerList = new ArrayList<>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -133,10 +268,8 @@ public class RestaurantDB {
      * Use: tid, eid
      */
     public void assignServer(Table table, Employee employee) {
-        table.setTstate(TableState.ORDERING);
         int eid = employee.getEid();
         int tid = table.getTid();
-        table.setEid(eid);
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -154,21 +287,29 @@ public class RestaurantDB {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        table.setTstate(TableState.ORDERING);
+        table.setEid(eid);
+
+        this.tables.add(this.tables.indexOf(table), table);
     }
 
     /**
      * Adds a list of dishes associated with a table and sets the table state to Waiting.
      *
+     * Uses:
+     * - Dishes
+     * - tid
      * Modifies:
      * - Orders
      * - Tables
      */
-    public void addOrders(List<Order> OrderList, Table table, List<Dish> DishList) {
+    public void addOrders(Table table, List<Dish> dishList) {
         table.setTstate(TableState.WAITING);
-        for(int i = 0; i < DishList.size(); i++){
-            OrderList.add(new Order(table.getTid(), DishList.get(i).getDid()));
+        for(int i = 0; i < dishList.size(); i++){
+            table.getOrders().add(dishList.get(i));
         }
-        for(int i = 0; i < DishList.size(); i++){
+        for(int i = 0; i < dishList.size(); i++){
             try {
                 Class.forName("com.mysql.jdbc.Driver");
                 connect = DriverManager.getConnection(
@@ -179,7 +320,7 @@ public class RestaurantDB {
                                        """;
                 PreparedStatement preparedStatement = connect.prepareStatement(updateString);
                 preparedStatement.setInt(1, table.getTid());
-                preparedStatement.setInt(2, DishList.get(i).getDid());
+                preparedStatement.setInt(2, dishList.get(i).getDid());
                 preparedStatement.executeUpdate();
             }
             catch (Exception e) {
@@ -200,6 +341,7 @@ public class RestaurantDB {
                 e.printStackTrace();
             }
 
+            this.tables.add(this.tables.indexOf(table), table);
         }
     }
 
@@ -207,19 +349,21 @@ public class RestaurantDB {
      * Record total of order prices in the table tuple, clears all orders associated with the table, set table state
      * to served.
      * //TODO: move declarations into try statements, drop orders
+     * Uses:
+     * - tid
      * Modifies:
      * - Tables
      * - Orders
      */
-    public double serveAllOrders(List<Order> orderList, Table table) {
+    public void serveAllOrders(Table table) {
         /** include:
          * String updateString1 =   "DROP FROM Orders";
          *             PreparedStatement preparedStatement1 = connect.prepareStatement(updateString1);
          *             preparedStatement1.executeUpdate();
          */
-        table.setTstate(TableState.SERVED);
-        int tid = table.getTid();
-        double totalBill = 0;
+
+        double totalBill = table.getOrders().stream().mapToDouble(Dish::getPrice).sum();
+
         try {
             Class.forName("com.mysql.jdbc.Driver");
             connect = DriverManager.getConnection(
@@ -238,10 +382,12 @@ public class RestaurantDB {
             Class.forName("com.mysql.jdbc.Driver");
             connect = DriverManager.getConnection(
                     "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
-            String queryString =   "SELECT SUM(Dishes.price)\n" +
-                    "FROM Orders\n" +
-                    "JOIN Dishes ON Orders.did = Dishes.did\n" +
-                    "WHERE Orders.tid = table_id;";
+            String queryString = """
+                    SELECT SUM(Dishes.price)
+                    FROM Orders
+                    JOIN Dishes ON Orders.did = Dishes.did
+                    WHERE Orders.tid = table_id;
+                    """;
             PreparedStatement preparedStatement = connect.prepareStatement(queryString);
             //preparedStatement.setInt(1, tid);
             ResultSet rs = preparedStatement.executeQuery(
@@ -253,47 +399,31 @@ public class RestaurantDB {
             e.printStackTrace();
         }
 
-        return totalBill;
+        table.setTstate(TableState.SERVED);
+        table.setTotal(totalBill);
+
+        this.tables.add(this.tables.indexOf(table), table);
     }
 
-    /**
-     * TODO: clear for specific table
-     * Modifies:
-     * -Orders
-     */
-    public void clearAllOrders(List<Order> orderList) {
-        orderList.clear();
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            connect = DriverManager.getConnection(
-                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
-            String updateString =   "DROP FROM Orders";
-            PreparedStatement preparedStatement = connect.prepareStatement(updateString);
-            preparedStatement.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+
 
     /**
      * Applies the tip to the table's total. Marks the table as vacant, increments employee's earned
      * attribute, and adds the total * tip quantity. Does NOT remove employee earnings from
      * balance in the ledger (that occurs when employees are paid).
      *
+     * Uses:
+     * - tid
      * Modifies:
      * - Tables
      * - Employees
      * - Ledger
-     * TODO: make serveAllOrders modify table.total
      *
      * @Args: tip: input 12.3 means a $12.30 tip
      */
-    public void vacateTable(Table table, List<Employee> employeeList, List<LedgerEntry> ledger, double tip) {
-
+    public void vacateTable(Table table, List<Employee> employeeList, double tip) {
 
         int tid = table.getTid();
-        table.setTstate(TableState.VACANT);
-
         int lid = -1;
         Date date = Date.valueOf(LocalDate.now());
         String note = "Table " + table.getTid() + " vacated with subtotal: " +
@@ -303,7 +433,6 @@ public class RestaurantDB {
 
         Employee employee = employeeList.get(table.getEid());
         int eid = employee.getEid();
-        employee.addEarned(tip);
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -311,13 +440,14 @@ public class RestaurantDB {
                     "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
             connect.setAutoCommit(false);
 
-            String updateString1 =  "UPDATE Tables \n" +
-                                    "SET tstate = 'VACANT' \n" +
-                                    "WHERE tid = ? ";
+            String updateString1 = """
+                    UPDATE Tables\s
+                    SET tstate = 'VACANT'\s
+                    WHERE tid = ?\s
+                    """;
             PreparedStatement preparedStatement1 = connect.prepareStatement(updateString1);
             preparedStatement1.setInt(1, tid);
             preparedStatement1.executeUpdate();
-            //connect.commit();
 
             String updateString2 =  "INSERT INTO Ledger(ldate, note, balance) \n" +
                                     "VALUES( ? , ? , ?)";
@@ -347,23 +477,29 @@ public class RestaurantDB {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        ledger.add(new LedgerEntry(lid, date, note, finalBill));
+
+        table.setTstate(TableState.VACANT);
+        employee.addEarned(tip);
+
+        this.tables.add(this.tables.indexOf(table), table);
+        this.employees.add(this.employees.indexOf(employee), employee);
+
+        ledgerEntries.add(new LedgerEntry(lid, date, note, finalBill));
     }
 
     /**
      * Decrements the employee's earned amount and records the changes in the ledger.
      *
-     *
+     * Uses:
+     * - eid
      * Modifies:
      * - Employees
      * - Ledger
-     * TODO: decide Ledger or List<LedgerEntry>
      */
-    public void payEmployee(Employee employee, List<LedgerEntry> ledger) {
+    public void payEmployee(Employee employee, double amount) throws RuntimeException {
         int eid = employee.getEid();
         String ename = employee.getEname();
         double earned = employee.getEarned();
-        employee.setEarned(0);
 
         int lid = -1;
         double tipsPaid = earned * -1;
@@ -408,30 +544,9 @@ public class RestaurantDB {
             e.printStackTrace();
         }
 
-        ledger.add(new LedgerEntry(lid, date, note, tipsPaid));
+        employee.setEarned(employee.getEarned() + amount);
+        this.employees.add(this.employees.indexOf(employee), employee);
+
+        ledgerEntries.add(new LedgerEntry(lid, date, note, tipsPaid));
     }
-
-//    public static void main(String[] args) {
-//        RestaurantDB q = new RestaurantDB();
-////        List<String> dn = q.getDishNames();
-////        for(int i = 0; i < dn.size(); i++){
-////            System.out.println("Dish Name = " + dn.get(i));
-////        }
-//        List<Table> lt = q.getTables();
-//        List<Employee> le = q.getEmployees();
-//
-//        for(int k = 0; k < lt.size(); k++){
-//            System.out.println(lt.get(k).toString());
-//        }
-//
-//        q.assignServer(lt.get(0), le.get(3));
-//
-//        List<Table> lt2 = q.getTables();
-//        for(int k = 0; k < lt2.size(); k++){
-//            System.out.println(lt2.get(k).toString());
-//        }
-//
-//    }
-
-
 }

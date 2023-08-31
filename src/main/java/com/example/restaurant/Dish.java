@@ -48,7 +48,7 @@ public class Dish {
         this.price = price;
     }
 
-    public DishType category() {
+    public DishType getCategory() {
         return category;
     }
 

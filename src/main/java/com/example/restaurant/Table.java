@@ -1,6 +1,11 @@
 
 package com.example.restaurant;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
+import java.util.ArrayList;
+
 public class Table {
     private int tid;
     private int eid;
@@ -9,12 +14,15 @@ public class Table {
 
     private TableState tstate;
 
+    private ObservableList<Dish> orders;
+
     public Table(int tid, int eid, int seats, double total, String tstate) {
         this.tid = tid;
         this.eid = eid;
         this.seats = seats;
         this.total = total;
         this.tstate = TableState.valueOf(tstate);
+        this.orders = FXCollections.observableList(new ArrayList<>());
     }
 
     public int getTid() {
@@ -66,6 +74,10 @@ public class Table {
                 ", charge=" + total +
                 ", tstate=" + tstate +
                 '}';
+    }
+
+    public ObservableList<Dish> getOrders() {
+        return orders;
     }
 }
 

@@ -3,8 +3,6 @@ package com.example.restaurant;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
-import javafx.geometry.Insets;
-import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
@@ -14,7 +12,6 @@ import javafx.util.Callback;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.StringJoiner;
 
 class CustomerMenu
 {
@@ -42,7 +39,7 @@ class CustomerMenu
 
         Arrays.stream(DishType.values()).toList().forEach(dishType -> {
             FilteredList<Dish> newFilteredList = new FilteredList<Dish>(this.dishes);
-            newFilteredList.setPredicate(dish -> dish.category() == dishType);
+            newFilteredList.setPredicate(dish -> dish.getCategory() == dishType);
             this.filteredLists.add(dishType.ordinal(), newFilteredList);
 
             ListView<Dish> newView = new ListView<>(newFilteredList);
