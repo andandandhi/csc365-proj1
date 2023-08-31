@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Button?>
+
+<VBox alignment="CENTER" prefHeight="651.0" prefWidth="522.0" spacing="20.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.restaurant.HelloController">
+  <padding>
+    <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+  </padding>
+   <children>
+      <TabPane prefHeight="319.0" prefWidth="490.0" tabClosingPolicy="UNAVAILABLE">
+        <tabs>
+          <Tab fx:id="employeesTab" text="Employees">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="350.0" prefWidth="482.0">
+                     <children>
+                        <TabPane layoutX="147.0" layoutY="-9.0" prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" />
+                        <ListView fx:id="myListView" prefHeight="275.0" prefWidth="482.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        <ListView fx:id="idTAG" layoutX="6.0" prefHeight="103.0" prefWidth="217.0" />
+                        <ListView layoutX="217.0" layoutY="-1.0" prefHeight="104.0" prefWidth="260.0" />
+                        <Separator layoutX="223.0" layoutY="3.0" orientation="VERTICAL" prefHeight="96.0" prefWidth="2.0" />
+                        <Label fx:id="nameTag" layoutX="14.0" layoutY="14.0" prefHeight="21.0" prefWidth="53.0" text="Name" />
+                        <Label layoutX="153.0" layoutY="14.0" prefHeight="21.0" prefWidth="32.0" text="ID" />
+                        <Label fx:id="roleTag" layoutX="382.0" layoutY="14.0" prefHeight="21.0" prefWidth="52.0" text="Role" />
+                        <Label fx:id="owedTag" layoutX="14.0" layoutY="60.0" text="Owed:" />
+                        <Button fx:id="payButton" layoutX="8.0" layoutY="103.0" mnemonicParsing="false" text="Pay" />
+                        <Button fx:id="button1" layoutX="67.0" layoutY="103.0" mnemonicParsing="false" text="Button" />
+                        <Button fx:id="addOwedButton" layoutX="172.0" layoutY="103.0" mnemonicParsing="false" text="Add Owed" />
+                        <Button fx:id="buttton2" layoutX="306.0" layoutY="103.0" mnemonicParsing="false" text="Button" />
+                        <Button fx:id="removeButton" layoutX="408.0" layoutY="103.0" mnemonicParsing="false" text="Remove" />
+                     </children></AnchorPane>
+            </content>
+          </Tab>
+        </tabs>
+      </TabPane>
+   
+     <Label fx:id="welcomeText" />
+      <Button fx:id="addButton" mnemonicParsing="false" text="Add" />
+   </children>
+</VBox>
