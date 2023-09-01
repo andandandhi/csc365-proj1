@@ -2,9 +2,7 @@ package com.example.restaurant;
 
 public class Order {
     private int tid;
-
     private int did;
-
     private int oid;
 
     private Dish dish;
@@ -15,6 +13,13 @@ public class Order {
         this.did = did;
     }
 
+    public int getOid() {
+        return oid;
+    }
+
+    public void setOid(int oid) {
+        this.oid = oid;
+    }
     public int getTid() {
         return tid;
     }
@@ -29,14 +34,6 @@ public class Order {
 
     public void setDid(int did) {
         this.did = did;
-    }
-
-    public int getOid() {
-        return oid;
-    }
-
-    public void setOid(int oid) {
-        this.oid = oid;
     }
 
     public Dish getDish() {

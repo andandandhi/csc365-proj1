@@ -17,10 +17,11 @@ public class RestaurantDB {
     private final ObservableList<LedgerEntry> ledgerEntries;
 
     private final ObservableList<Order> orders;
-    
+
     public RestaurantDB() throws SQLException {
-        setConnect(DriverManager.getConnection(
-                "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365"));
+        connect = DriverManager.getConnection(
+                "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
+        getConnect().setAutoCommit(false);
 
         dishes = FXCollections.observableList(fetchDishes());
         employees = FXCollections.observableList(fetchEmployees());
@@ -33,10 +34,7 @@ public class RestaurantDB {
         return connect;
     }
 
-    public void setConnect(Connection connect) throws SQLException {
-        this.connect = connect;
-        this.connect.setAutoCommit(false);
-    }
+
 
     public void editDish(Dish dish, String dname, String description, double price, DishType category)
     {
@@ -83,6 +81,8 @@ public class RestaurantDB {
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
+            getConnect().setAutoCommit(false);
+
             String updateString1 =  """
                                     INSERT INTO Dishes(dname, description, price, category)
                                     VALUES( ? , ? , ? , ? )
@@ -117,6 +117,8 @@ public class RestaurantDB {
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
+            getConnect().setAutoCommit(false);
+
             String updateString1 =  """
                                     DELETE FROM Dishes
                                     WHERE did = ?
@@ -139,11 +141,64 @@ public class RestaurantDB {
     }
 
     public void addEmployee(Employee employee) {
+        int eid = -1;
+        String ename = employee.getEname();
+        double earned = employee.getEarned();
+        String role = employee.getRole();
 
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            getConnect().setAutoCommit(false);
+
+            String updateString1 =  """
+                                    INSERT INTO Employee(ename, earned, role)
+                                    VALUES( ? , ? , ? )
+                                    """;
+            PreparedStatement preparedStatement1 = getConnect().prepareStatement(updateString1);
+            preparedStatement1.setString(1, ename);
+            preparedStatement1.setDouble(2, earned);
+            preparedStatement1.setString(3, role);
+            preparedStatement1.executeUpdate();
+
+            String queryString2 = """
+                    SELECT LAST_INSERT_ID('Employee')""";
+            PreparedStatement preparedStatement2 = getConnect().prepareStatement(queryString2);
+            ResultSet rs2 = preparedStatement2.executeQuery();
+            eid = rs2.getInt(1);
+
+            getConnect().commit();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        employee.setEid(eid);
+        employees.add(employee);
     }
 
     public void removeEmployee(Employee employee) {
         // TODO: what if employee is removed while serving table?
+        int eid = employee.getEid();
+
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            getConnect().setAutoCommit(false);
+
+            String updateString1 =  """
+                                    DELETE FROM Employees
+                                    WHERE eid = ?
+                                    """;
+            PreparedStatement preparedStatement1 = getConnect().prepareStatement(updateString1);
+            preparedStatement1.setInt(1, eid);
+            preparedStatement1.executeUpdate();
+
+            getConnect().commit();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        employees.remove(employee);
     }
 
     /**
@@ -152,26 +207,82 @@ public class RestaurantDB {
      * - Employees
      */
     public void addOwed(Employee employee, double addition) {
+        int eid = employee.getEid();
 
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            getConnect().setAutoCommit(false);
+
+            PreparedStatement preparedStatement1 = getConnect().prepareStatement(
+                    """
+                    UPDATE Employees
+                    SET earned = earned + ?
+                    WHERE eid = ?
+                    """
+            );
+            preparedStatement1.setDouble(1, addition);
+            preparedStatement1.setInt(2, eid);
+
+            preparedStatement1.executeUpdate();
+
+            getConnect().commit();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        employee.addEarned(addition);
+
+        this.employees.add(this.employees.indexOf(employee), employee);
     }
 
     public void addLedgerEntry(LedgerEntry ledgerEntry) {
+        int lid = -1;
+        Date date = ledgerEntry.getDate();
+        String note = ledgerEntry.getNote();
+        double balance = ledgerEntry.getBalance();
 
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            getConnect().setAutoCommit(false);
+
+            String updateString1 =  """
+                                    INSERT INTO Ledger(date, note, balance)
+                                    VALUES( ? , ? , ? )
+                                    """;
+            PreparedStatement preparedStatement1 = getConnect().prepareStatement(updateString1);
+            preparedStatement1.setDate(1, date);
+            preparedStatement1.setString(2, note);
+            preparedStatement1.setDouble(3, balance);
+            preparedStatement1.executeUpdate();
+
+            String queryString2 = """
+                    SELECT LAST_INSERT_ID('Ledger')""";
+            PreparedStatement preparedStatement2 = getConnect().prepareStatement(queryString2);
+            ResultSet rs2 = preparedStatement2.executeQuery();
+            lid = rs2.getInt(1);
+
+            getConnect().commit();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        ledgerEntry.setLid(lid);
+        ledgerEntries.add(ledgerEntry);
     }
 
-    public void removeTable(Table table) {
 
-    }
 
-    public void addTable(Table table) {
-        
-    }
+
 
     private List<Dish> fetchDishes() {
 
         List<Dish> dishList = new ArrayList<>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
+            getConnect().setAutoCommit(false);
+
             Statement statement = getConnect().createStatement();
             ResultSet rs = statement.executeQuery(
                     "SELECT * FROM Dishes");
@@ -184,6 +295,9 @@ public class RestaurantDB {
                 Dish d = new Dish(did, dName, description, price, categoryString);
                 dishList.add(d);
             }
+
+            getConnect().commit();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -194,6 +308,8 @@ public class RestaurantDB {
         List<Employee> employeeList = new ArrayList<>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
+            getConnect().setAutoCommit(false);
+
             Statement statement = getConnect().createStatement();
             ResultSet rs = statement.executeQuery(
                     "SELECT * FROM Employees");
@@ -205,6 +321,9 @@ public class RestaurantDB {
                 Employee e = new Employee(eid, ename, earned, role);
                 employeeList.add(e);
             }
+
+            getConnect().commit();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -216,6 +335,8 @@ public class RestaurantDB {
         List<Table> tableList = new ArrayList<>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
+            getConnect().setAutoCommit(false);
+
             Statement statement = getConnect().createStatement();
             ResultSet rs = statement.executeQuery(
                     "SELECT * FROM Tables");
@@ -228,6 +349,9 @@ public class RestaurantDB {
                 Table t = new Table(tid, eid, seats, total, tstateString);
                 tableList.add(t);
             }
+
+            getConnect().commit();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -242,6 +366,8 @@ public class RestaurantDB {
         List<LedgerEntry> ledgerList = new ArrayList<>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
+            getConnect().setAutoCommit(false);
+
             Statement statement = getConnect().createStatement();
             ResultSet rs = statement.executeQuery(
                     "SELECT * FROM Ledger");
@@ -253,6 +379,9 @@ public class RestaurantDB {
                 LedgerEntry l = new LedgerEntry(lid, date, note, balance);
                 ledgerList.add(l);
             }
+
+            getConnect().commit();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -263,6 +392,8 @@ public class RestaurantDB {
         List<Order> orderList = new ArrayList<>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
+            getConnect().setAutoCommit(false);
+
             Statement statement = getConnect().createStatement();
             ResultSet rs = statement.executeQuery(
                     "SELECT * FROM Orders");
@@ -274,6 +405,9 @@ public class RestaurantDB {
                 Order o = new Order(oid, tid, did, correspondingDish);
                 orderList.add(o);
             }
+
+            getConnect().commit();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -291,6 +425,8 @@ public class RestaurantDB {
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
+            getConnect().setAutoCommit(false);
+
             String updateString = """
                     UPDATE Tables
                     SET tstate = 'ORDERING', eid = ?
@@ -300,6 +436,9 @@ public class RestaurantDB {
             preparedStatement.setInt(1, eid);
             preparedStatement.setInt(2, tid);
             preparedStatement.executeUpdate();
+
+            getConnect().commit();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -308,6 +447,71 @@ public class RestaurantDB {
         table.setEid(eid);
 
         this.getTables().set(this.getTables().indexOf(table), table);
+    }
+
+
+    public void addTable(Table table) {
+        int tid = -1;
+        int eid = table.getEid();
+        int seats = table.getSeats();
+        double total = table.getTotal();
+        TableState tstate = table.getTstate();
+
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            getConnect().setAutoCommit(false);
+
+            String updateString1 =  """
+                                    INSERT INTO Tables(eid, seats, total, tstate)
+                                    VALUES( ? , ? , ? , ? )
+                                    """;
+            PreparedStatement preparedStatement1 = connect.prepareStatement(updateString1);
+            preparedStatement1.setInt(1, eid);
+            preparedStatement1.setInt(2, seats);
+            preparedStatement1.setDouble(3, total);
+            preparedStatement1.setString(4, tstate.toString());
+            preparedStatement1.executeUpdate();
+
+            String queryString2 = """
+                    SELECT LAST_INSERT_ID('Table')""";
+            PreparedStatement preparedStatement2 = connect.prepareStatement(queryString2);
+            ResultSet rs2 = preparedStatement2.executeQuery();
+            tid = rs2.getInt(1);
+
+            getConnect().commit();
+
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        table.setTid(tid);
+        tables.add(table);
+    }
+
+
+    public void removeTable(Table table) {
+        int tid = table.getTid();
+
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            getConnect().setAutoCommit(false);
+
+            String updateString1 =  """
+                                    DELETE FROM Tables
+                                    WHERE tid = ?
+                                    """;
+            PreparedStatement preparedStatement1 = connect.prepareStatement(updateString1);
+            preparedStatement1.setInt(1, tid);
+            preparedStatement1.executeUpdate();
+
+            getConnect().commit();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        tables.remove(table);
     }
 
     /**
@@ -326,47 +530,138 @@ public class RestaurantDB {
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            String updateString =  """
+            getConnect().setAutoCommit(false);
+
+            String updateString1 =  """
                                    INSERT INTO Orders
                                    VALUES( ? , ? )
                                    """;
-            PreparedStatement preparedStatement = getConnect().prepareStatement(updateString);
-            preparedStatement.setInt(1, order.getTid());
-            preparedStatement.setInt(2, order.getDid());
-            preparedStatement.executeUpdate();
+            PreparedStatement preparedStatement1 = getConnect().prepareStatement(updateString1);
+            preparedStatement1.setInt(1, order.getTid());
+            preparedStatement1.setInt(2, order.getDid());
+            preparedStatement1.executeUpdate();
 
             String getOrderIndexString = """
                     SELECT LAST_INSERT_ID('Orders')
                     """;
-            PreparedStatement preparedStatement1 = getConnect().prepareStatement(getOrderIndexString);
-            ResultSet rs = preparedStatement1.executeQuery();
-            rs.next();
-            int newOid = rs.getInt(1);
+            PreparedStatement preparedStatement2 = getConnect().prepareStatement(getOrderIndexString);
+            ResultSet rs2 = preparedStatement2.executeQuery();
+            rs2.next();
+            int newOid = rs2.getInt(1);
             order.setOid(newOid);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
+
             String updateString =   "UPDATE Tables\n" +
-                                    "SET State = 'WAITING'" +
-                                    "WHERE tid = ? ";
+                    "SET State = 'WAITING'" +
+                    "WHERE tid = ? ";
             PreparedStatement preparedStatement = getConnect().prepareStatement(updateString);
             preparedStatement.setInt(1, table.getTid());
             preparedStatement.executeUpdate();
+
+            getConnect().commit();
         }
         catch (Exception e) {
             e.printStackTrace();
         }
+
 
         this.getTables().set(this.getTables().indexOf(table), table);
     }
 
     /**
+     * cancelOrder
+     * serveOrder
+     * both by order id
+     *
+     */
+    public void cancelOrder(Order order) {
+        int oid = order.getOid();
+
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            getConnect().setAutoCommit(false);
+
+            String updateString1 =  """
+                                    DELETE FROM Order
+                                    WHERE oid = ?
+                                    """;
+            PreparedStatement preparedStatement1 = connect.prepareStatement(updateString1);
+            preparedStatement1.setInt(1, oid);
+            preparedStatement1.executeUpdate();
+
+            getConnect().commit();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        //TODO: include javaside effects of Order when merging
+    }
+
+    public void serveOrder(Order order){
+        int oid = order.getOid();
+        int tid = order.getTid();
+
+        double partialBill = 0;
+        for(Dish d : dishes){
+            if(d.getDid() == order.getOid()){
+                partialBill = d.getPrice();
+            }
+        }
+
+        boolean isLastOrder = false;
+        for(Table t : tables){
+            if(t.getTid() == order.getTid()){
+                if(t.getOrders().size() == 1){
+                    isLastOrder = true;
+                }
+            }
+        }
+
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            connect = DriverManager.getConnection(
+                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
+            connect.setAutoCommit(false);
+            String updateString1 = """
+                    UPDATE Tables
+                    SET total = total + ?
+                    WHERE tid = ? 
+                    """;
+            PreparedStatement preparedStatement1 = connect.prepareStatement(updateString1);
+            preparedStatement1.setDouble(1, partialBill);
+            preparedStatement1.setInt(2, tid);
+            preparedStatement1.executeUpdate();
+
+            String updateString2 = """
+                    DELETE FROM ORDERS
+                    WHERE oid = ?
+                    """;
+            PreparedStatement preparedStatement2 = connect.prepareStatement(updateString2);
+            preparedStatement2.setInt(1, oid);
+            preparedStatement2.executeUpdate();
+
+            if(isLastOrder) {
+                String updateString3 = """
+                        UPDATE Tables
+                        SET tstate = 'SERVED'
+                        WHERE tid = ? 
+                        """;
+                PreparedStatement preparedStatement3 = connect.prepareStatement(updateString3);
+                preparedStatement3.setInt(1, tid);
+                preparedStatement3.executeUpdate();
+            }
+
+            connect.commit();
+            connect.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        //TODO: include javaside effects of Order when merging
+    }
+
+    /**
      * Record total of order prices in the table tuple, clears all orders associated with the table, set table state
      * to served.
-     * //TODO: move declarations into try statements, drop orders
      * Uses:
      * - tid
      * Modifies:
@@ -374,11 +669,7 @@ public class RestaurantDB {
      * - Orders
      */
     public void serveAllOrders(Table table) {
-        /** include:
-         * String updateString1 =   "DROP FROM Orders";
-         *             PreparedStatement preparedStatement1 = connect.prepareStatement(updateString1);
-         *             preparedStatement1.executeUpdate();
-         */
+        int tid = table.getTid();
 
         double totalBill = this.orders
                 .stream()
@@ -388,37 +679,38 @@ public class RestaurantDB {
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            String updateString =
-                    "UPDATE Tables\n" +
-                    "SET State = 'SERVED'" +
-                    "WHERE tid = ? ;";
-            PreparedStatement preparedStatement = getConnect().prepareStatement(updateString);
-            preparedStatement.setInt(1, table.getTid());
-            preparedStatement.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            String queryString = """
-                    SELECT SUM(Dishes.price)
-                    FROM Orders
-                    JOIN Dishes ON Orders.did = Dishes.did
-                    WHERE Orders.tid = table_id;
+            getConnect().setAutoCommit(false);
+
+            String updateString1 = """
+                    UPDATE Tables
+                    SET tstate = 'SERVED', total = total + ?
+                    WHERE tid = ? 
                     """;
-            PreparedStatement preparedStatement = getConnect().prepareStatement(queryString);
-            //preparedStatement.setInt(1, tid);
-            ResultSet rs = preparedStatement.executeQuery(
-                    "SELECT * FROM Employees");
-            while (rs.next()) {
-                totalBill = rs.getDouble(1);
-            }
+            PreparedStatement preparedStatement1 = getConnect().prepareStatement(updateString1);
+            preparedStatement1.setDouble(1, totalBill);
+            preparedStatement1.setInt(2, tid);
+            preparedStatement1.executeUpdate();
+
+            String updateString2 = """
+                    DELETE FROM ORDERS
+                    WHERE tid = ?
+                    """;
+            PreparedStatement preparedStatement2 = getConnect().prepareStatement(updateString2);
+            preparedStatement2.setInt(1, tid);
+            preparedStatement2.executeUpdate();
+
+            getConnect().commit();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         table.setTstate(TableState.SERVED);
-        table.setTotal(totalBill);
+        table.setTotal(table.getTotal() + totalBill);
+
+        //TODO: include javaside effects of Order when merging
+        table.getOrders().clear();
+
 
         this.getTables().set(this.getTables().indexOf(table), table);
     }
@@ -582,11 +874,12 @@ public class RestaurantDB {
         return orders;
     }
 
-    public void serveOrder(Order order) {
 
-    }
 
-    public void cancelOrder(Order order) {
-
+    /**
+     * call this before ending your program
+     */
+    public void closeConnection(){
+        getConnect().close();
     }
 }
