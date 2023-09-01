@@ -1,44 +1,31 @@
 package com.example.restaurant;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
-import javafx.stage.Stage;
 import javafx.util.Callback;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
-class CustomerMenu
-{
-    private Stage stage;
-    private ArrayList<ListView<Dish>> views;
-    private ObservableList<Dish> dishes;
-    private TabPane categoryTabs;
+class CustomerMenu extends RestaurantScene {
+    private final ArrayList<ListView<Dish>> views;
+    private final TabPane categoryTabs;
     private ArrayList<FilteredList<Dish>> filteredLists;
-    private Scene scene;
 
-    public CustomerMenu(RestaurantDB restaurantDB, Stage stage)
-    {
-        this.stage = stage;
+    private final Pane layout;
+
+    public CustomerMenu(RestaurantDB restaurantDB) {
 
         this.categoryTabs = new TabPane();
-
-        this.dishes = FXCollections.observableList(restaurantDB.getDishes());
-
-        this.categoryTabs.prefWidthProperty().bind(stage.widthProperty());
-        this.categoryTabs.prefHeightProperty().bind(stage.heightProperty());
 
         this.filteredLists = new ArrayList<>();
 
         this.views = new ArrayList<>();
 
         Arrays.stream(DishType.values()).toList().forEach(dishType -> {
-            FilteredList<Dish> newFilteredList = new FilteredList<Dish>(this.dishes);
+            FilteredList<Dish> newFilteredList = new FilteredList<>(restaurantDB.getDishes());
             newFilteredList.setPredicate(dish -> dish.getCategory() == dishType);
             this.filteredLists.add(dishType.ordinal(), newFilteredList);
 
@@ -47,25 +34,21 @@ class CustomerMenu
             this.views.add(newView);
 
             newView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-            newView.setCellFactory(new Callback<ListView<Dish>, ListCell<Dish>>() {
+            newView.setCellFactory(new Callback<>() {
 
                 /* Overrides the call method to custom-define how cells are created */
                 @Override
                 public ListCell<Dish> call(ListView<Dish> dishListView) {
                     /* Creates a new ListCell that displays a formatted string for the dish*/
-                    return new ListCell<Dish>() {
+                    return new ListCell<>() {
                         @Override
-                        protected void updateItem(Dish item, boolean empty)
-                        {
+                        protected void updateItem(Dish item, boolean empty) {
                             super.updateItem(item, empty);
 
-                            if(empty || item == null)
-                            {
+                            if (empty || item == null) {
                                 setText(null);
                                 setGraphic(null);
-                            }
-                            else
-                            {
+                            } else {
                                 Text content = new Text(item.getDname() + " • "
                                         + "$" + item.getPrice() +
                                         "\n" + item.getDescription()
@@ -95,15 +78,13 @@ class CustomerMenu
                 }
         );
 
-        VBox layout = new VBox();
+        layout = new VBox();
         layout.getChildren().add(this.categoryTabs);
-
-        this.scene = new Scene(layout, RestaurantScene.xDim, RestaurantScene.yDim);
     }
 
-    /* Swaps to the menu view on the stage provided */
-    public void display() {
-        stage.setScene(this.scene);
-        stage.show();
+    /* Returns the root element for the menu view, allowing it to be
+     * embedded in a layout */
+    public Pane getAsElement() {
+        return this.layout;
     }
 }

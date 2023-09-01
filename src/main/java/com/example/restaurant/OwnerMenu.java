@@ -31,9 +31,6 @@ class OwnerMenu extends RestaurantScene
 
         this.categoryTabs = new TabPane();
 
-//        this.categoryTabs.prefWidthProperty().bind(t.getTabPane().widthProperty());
-//        this.categoryTabs.prefHeightProperty().bind(stage.heightProperty());
-
         this.filteredLists = new ArrayList<>();
 
         this.views = new ArrayList<>();

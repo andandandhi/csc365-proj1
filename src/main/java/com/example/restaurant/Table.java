@@ -15,6 +15,8 @@ public class Table {
 
     private SimpleStringProperty serverString;
 
+    private SimpleStringProperty totalString;
+
 
     public Table(int tid, int eid, int seats, double total, String tstate) {
         this.tid = tid;
@@ -28,6 +30,8 @@ public class Table {
         );
 
         this.serverString = new SimpleStringProperty("");
+
+        this.setTotalString(new SimpleStringProperty("Total: " + this.total));
     }
 
     public int getTid() {
@@ -58,13 +62,6 @@ public class Table {
         return this.serverString;
     }
 
-    public int getSeats() {
-        return seats;
-    }
-
-    public void setSeats(int seats) {
-        this.seats = seats;
-    }
 
     public double getTotal() {
         return total;
@@ -72,11 +69,9 @@ public class Table {
 
     public void setTotal(double total) {
         this.total = total;
+        this.getTotalString().set("Total: " + this.getTotal());
     }
 
-    public TableState getTstate() {
-        return tstate;
-    }
 
     public void setTstate(TableState tstate) {
         this.tstate = tstate;
@@ -99,5 +94,12 @@ public class Table {
         return this.headerString;
     }
 
+    public SimpleStringProperty getTotalString() {
+        return totalString;
+    }
+
+    public void setTotalString(SimpleStringProperty totalString) {
+        this.totalString = totalString;
+    }
 }
 

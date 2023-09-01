@@ -50,11 +50,3 @@ values
 (5,10, 0.00, 'VACANT');
 SELECT * FROM Tables;
 
-insert into Orders(tid, did)
-values
-(1,1),
-(1,2),
-(1,3),
-(1,4),
-(1,5);
-SELECT * FROM Orders;

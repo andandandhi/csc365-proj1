@@ -8,7 +8,6 @@ import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
-
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 
@@ -24,31 +23,43 @@ public class TableCard extends RestaurantScene {
 
     private ListView<Order> orderView;
 
-    public TableCard(Table table, RestaurantDB restaurantDB) {
-        this.restaurantDB = restaurantDB; /* TODO: belongs somewhere else? */
+    private TableDisplay tableDisplay;
+
+    public TableCard(Table table, TableDisplay tableDisplay) {
+        this.restaurantDB = tableDisplay.restaurantDB; /* TODO: belongs somewhere else? */
         this.table = table;
         this.orders = new FilteredList<>(restaurantDB.getOrders(), o -> o.getTid() == table.getTid());
+        this.tableDisplay = tableDisplay;
         prepOrderView();
 
-        this.layout = makeTableCard();
+        VBox v = new VBox();
+        String cssLayout = """
+                -fx-border-color: black;
+                -fx-border-insets: 5;
+                -fx-border-width: 1;
+                -fx-border-style: solid;
+                """;
+        v.setStyle(cssLayout);
+        v.getChildren().add(makeTableCard());
+        this.layout = v;
     }
 
     private void handleOrderCancellation(Order order)
     {
-        this.restaurantDB.cancelOrder(order);
+        this.restaurantDB.cancelOrder(order, this);
     }
 
-    private void handleOrderServe(Order order)
-    {
-        this.restaurantDB.serveOrder(order);
-    }
+//    private void handleOrderServe(Order order)
+//    {
+//        this.restaurantDB.serveOrder(order, this);
+//    }
 
     private void prepOrderView() {
         this.orderView = new ListView<>();
-        this.orderView.setPrefHeight(200);
+        this.getOrderView().setPrefHeight(200);
 
-        this.orderView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        this.orderView.setCellFactory(new Callback<>() {
+        this.getOrderView().getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        this.getOrderView().setCellFactory(new Callback<>() {
             @Override
             public ListCell<Order> call(ListView<Order> employeeListView) {
                 ListCell<Order> newCell = new ListCell<>() {
@@ -66,10 +77,10 @@ public class TableCard extends RestaurantScene {
                             Text dishName = new Text(order.getDish().getDname());
                             Button cancel = new Button("Cancel");
                             cancel.setOnAction(e -> handleOrderCancellation(order));
-                            Button serve = new Button("Serve");
-                            cancel.setOnAction(e -> handleOrderServe(order));
+                            // Button serve = new Button("Serve");
+                            // serve.setOnAction(e -> handleOrderServe(order));
                             buttons.getButtons().add(cancel);
-                            buttons.getButtons().add(serve);
+                            // buttons.getButtons().add(serve);
                             entry.add(dishName, 0, 0);
                             entry.add(buttons, 1, 0);
 
@@ -96,20 +107,11 @@ public class TableCard extends RestaurantScene {
             }
         });
 
-        this.orderView.setItems(this.orders);
+        this.getOrderView().setItems(this.getOrders());
     }
 
     public Parent getAsElement() {
-        String cssLayout = """
-                -fx-border-color: black;
-                -fx-border-insets: 5;
-                -fx-border-width: 1;
-                -fx-border-style: solid;
-                """;
-        VBox vbox = new VBox();
-        vbox.setStyle(cssLayout);
-        vbox.getChildren().add(this.layout);
-        return vbox;
+        return this.layout;
     }
 
     private VBox makeTableCard() {
@@ -120,6 +122,7 @@ public class TableCard extends RestaurantScene {
         cardLayout.getChildren().addAll(
                 this.makeHeader(),
                 this.makeServerLabel(),
+                this.makeTotalLabel(),
                 this.makeOrderView(),
                 this.makeServerAssignmentButton(),
                 this.makeAddOrderButton(),
@@ -135,7 +138,11 @@ public class TableCard extends RestaurantScene {
 
     private Button makeRemoveButton() {
         Button removeButton = new Button("Remove");
-        removeButton.setOnAction(e -> restaurantDB.removeTable(this.table));
+        removeButton.setOnAction(e -> {
+            restaurantDB.removeTable(this.table);
+            this.tableDisplay.getLayout().getChildren().remove(this.layout);
+        });
+
         removeButton.setMaxWidth(Double.MAX_VALUE);
         return removeButton;
     }
@@ -143,13 +150,6 @@ public class TableCard extends RestaurantScene {
     private HBox makeHeader() {
         /* Produce a header containing the table ID and table state */
         HBox layout = new HBox();
-
-//        Text tableName = new Text("Table "
-//                + table.getTid()
-//                + " - "
-//                + this.table.getTstate().toString().charAt(0)
-//                + this.table.getTstate().toString().substring(1).toLowerCase()
-//        );
 
         Text headerString = new Text();
         headerString.textProperty().bind(this.table.getHeaderString());
@@ -162,22 +162,12 @@ public class TableCard extends RestaurantScene {
         return layout;
     }
     private ListView<Order> makeOrderView() {
-        return this.orderView;
+        return this.getOrderView();
     }
 
     private Text makeServerLabel() {
         Text serverLabel = new Text();
         serverLabel.minWidth(Region.USE_COMPUTED_SIZE);
-
-        /* TODO: possible for a serverLabel to be created when a table doesn't have a server? */
-//        serverLabel.setText("Server: "
-//                + this.table.getEid() + " - "
-//                + restaurantDB.getEmployees()
-//                    .stream()
-//                    .findFirst()
-//                    .get()
-//                    .getEname()
-//        );
 
         serverLabel.textProperty().bind(table.getServerString());
         serverLabel.setTextAlignment(TextAlignment.LEFT);
@@ -187,26 +177,6 @@ public class TableCard extends RestaurantScene {
     private HBox makeServerAssignmentButton()
     {
         Button commit = new Button("Assign server");
-
-//        serverSelection.setCellFactory(new Callback<ListView<Employee>, ListCell<Employee>>() {
-//            @Override
-//            public ListCell<Employee> call(ListView<Employee> employeeListView) {
-//                return new ListCell<>() {
-//                  @Override
-//                  protected void updateItem(Employee employee, boolean empty)
-//                  {
-//                      super.updateItem(employee, empty);
-//
-//                      if(employee == null || empty)
-//                      {
-//                          this.setText("Missing employee");
-//                      } else {
-//                          this.setText(employee.getEid() + " - " + employee.getEname());
-//                      }
-//                  }
-//                };
-//            }
-//        });
 
         ComboBox<Employee> serverSelection = new ComboBox<>();
         serverSelection.setConverter(new StringConverter<Employee>() {
@@ -296,6 +266,12 @@ public class TableCard extends RestaurantScene {
         return layout;
     }
 
+    private Text makeTotalLabel() {
+        Text label = new Text();
+        label.textProperty().bind(this.table.getTotalString());
+        return label;
+    }
+
     private HBox makeVacateButton()
     {
         Button commit = new Button("Vacate");
@@ -315,7 +291,11 @@ public class TableCard extends RestaurantScene {
             }
             catch (RuntimeException r)
             {
-                /* TODO: print alert message */
+                Alert a = new Alert(Alert.AlertType.ERROR);
+                a.setHeaderText("Invalid input");
+                a.setContentText("Tips should be decimals.");
+                a.show();
+                return;
             }
 
             restaurantDB.vacateTable(this.table, tip);
@@ -331,9 +311,17 @@ public class TableCard extends RestaurantScene {
         Button serveButton = new Button("Serve all orders");
 
         serveButton.setOnAction(e -> {
-            this.restaurantDB.serveAllOrders(this.table);
+            this.restaurantDB.serveAllOrders(this.table, this);
         });
 
         return serveButton;
+    }
+
+    public FilteredList<Order> getOrders() {
+        return orders;
+    }
+
+    public ListView<Order> getOrderView() {
+        return orderView;
     }
 }

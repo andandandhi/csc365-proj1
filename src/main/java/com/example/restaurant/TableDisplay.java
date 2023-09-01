@@ -1,13 +1,18 @@
 package com.example.restaurant;
 
+import javafx.geometry.Insets;
 import javafx.scene.Parent;
+import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
+import java.util.EventListener;
+
 public class TableDisplay extends RestaurantScene{
 
-    VBox layout = new VBox();
+    private VBox layout = new VBox();
+
     RestaurantDB restaurantDB;
     public TableDisplay(RestaurantDB restaurantDB) {
         this.restaurantDB = restaurantDB;
@@ -16,42 +21,14 @@ public class TableDisplay extends RestaurantScene{
     @Override
     public Parent getAsElement() {
 
-//        ListView<Table> tableOfTables = new ListView<>();
-//        Property<ObservableList<Table>> tableListProperty = new SimpleObjectProperty<>(restaurantDB.getTables());
-//        tableOfTables.itemsProperty().bind(tableListProperty);
-
-//        tableOfTables.setCellFactory(new Callback<ListView<Table>, ListCell<Table>>() {
-//            @Override
-//            public ListCell<Table> call(ListView<Table> tableListView) {
-//                return new ListCell<>() {
-//                    @Override
-//                    protected void updateItem(Table table, boolean empty)
-//                    {
-//                        super.updateItem(table, empty);
-//                        if(table == null || empty)
-//                        {
-//
-//                        } else
-//                        {
-//                            TableCard newCard = new TableCard(table, restaurantDB);
-//                            Parent newCardElement = newCard.getAsElement();
-//                            this.getChildren().add(newCard.getAsElement());
-//                            this.prefHeightProperty().bind(((VBox)newCardElement).heightProperty());
-//                            this.prefWidthProperty().bind(((VBox)newCardElement).widthProperty());
-//                        }
-//                    }
-//                };
-//            }
-//        });
-
         restaurantDB.getTables().forEach(t -> {
-            TableCard card = new TableCard(t, restaurantDB);
-            layout.getChildren().add(card.getAsElement());
+            TableCard card = new TableCard(t, this);
+            getLayout().getChildren().add(card.getAsElement());
         });
 
-        layout.setFillWidth(true);
+        getLayout().setFillWidth(true);
 
-        layout.getChildren().forEach(c -> {
+        getLayout().getChildren().forEach(c -> {
             c.prefWidth(RestaurantScene.xDim - 40);
             VBox.setVgrow(c, Priority.ALWAYS);
         });
@@ -59,8 +36,23 @@ public class TableDisplay extends RestaurantScene{
         ScrollPane sp = new ScrollPane();
         sp.setMaxWidth(Double.MAX_VALUE);
         sp.setFitToWidth(true);
-        sp.setContent(layout);
+        sp.setContent(getLayout());
 
-        return sp;
+        Button addButton = new Button("Add table");
+        addButton.setOnAction(e -> {
+            restaurantDB.addTable(this);
+        });
+
+        addButton.setPadding(new Insets(4, 4, 4, 4));
+
+        VBox v = new VBox();
+        v.getChildren().addAll(sp, addButton);
+
+        return v;
     }
+
+    public VBox getLayout() {
+        return layout;
+    }
+
 }

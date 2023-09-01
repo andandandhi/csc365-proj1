@@ -1,7 +1,11 @@
 package com.example.restaurant;
 
+import javafx.beans.Observable;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 
 import java.time.LocalDate;
 import java.sql.*;
@@ -18,15 +22,27 @@ public class RestaurantDB {
 
     private final ObservableList<Order> orders;
 
+    private double balance;
+
+    private final SimpleStringProperty balanceString;
+
     public RestaurantDB() throws SQLException {
+//        setConnect(DriverManager.getConnection(
+//                "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365"));
+
+
         setConnect(DriverManager.getConnection(
-                "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365"));
+                "jdbc:mysql://@csc365.c1yrbhsogize.us-west-1.rds.amazonaws.com:3306/restaurant?user=admin&password=calpolycsc365"));
 
         dishes = FXCollections.observableList(fetchDishes());
         employees = FXCollections.observableList(fetchEmployees());
         tables = FXCollections.observableList(fetchTables());
         ledgerEntries = FXCollections.observableList(fetchLedgerEntries());
         orders = FXCollections.observableList(fetchOrders()); /* MUST BE CALLED AFTER DISHES AND TABLES */
+
+        balance = ledgerEntries.stream().mapToDouble(LedgerEntry::getBalance).sum();
+        balanceString = new SimpleStringProperty();
+        balanceString.set("$" + (int)(balance * 100)/100.0);
     }
 
     public Connection getConnect() {
@@ -142,138 +158,6 @@ public class RestaurantDB {
         this.dishes.remove(dish);
     }
 
-    public void addEmployee(Employee employee) {
-        int eid = -1;
-        String ename = employee.getEname();
-        double earned = employee.getEarned();
-        EmployeeRole role = employee.getRole();
-
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            getConnect().setAutoCommit(false);
-
-            String updateString1 =  """
-                                    INSERT INTO Employee(ename, earned, role)
-                                    VALUES( ? , ? , ? )
-                                    """;
-            PreparedStatement preparedStatement1 = getConnect().prepareStatement(updateString1);
-            preparedStatement1.setString(1, ename);
-            preparedStatement1.setDouble(2, earned);
-            preparedStatement1.setString(3, role.toString());
-            preparedStatement1.executeUpdate();
-
-            String queryString2 = """
-                    SELECT LAST_INSERT_ID('Employee')""";
-            PreparedStatement preparedStatement2 = getConnect().prepareStatement(queryString2);
-            ResultSet rs2 = preparedStatement2.executeQuery();
-            eid = rs2.getInt(1);
-
-            getConnect().commit();
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        employee.setEid(eid);
-        employees.add(employee);
-    }
-
-    public void removeEmployee(Employee employee) {
-        // TODO: what if employee is removed while serving table?
-        int eid = employee.getEid();
-
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            getConnect().setAutoCommit(false);
-
-            String updateString1 =  """
-                                    DELETE FROM Employees
-                                    WHERE eid = ?
-                                    """;
-            PreparedStatement preparedStatement1 = getConnect().prepareStatement(updateString1);
-            preparedStatement1.setInt(1, eid);
-            preparedStatement1.executeUpdate();
-
-            getConnect().commit();
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        employees.remove(employee);
-    }
-
-    /**
-     * Modifies:
-     * - LedgerEntries
-     * - Employees
-     */
-    public void addOwed(Employee employee, double addition) {
-        int eid = employee.getEid();
-
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            getConnect().setAutoCommit(false);
-
-            PreparedStatement preparedStatement1 = getConnect().prepareStatement(
-                    """
-                    UPDATE Employees
-                    SET earned = earned + ?
-                    WHERE eid = ?
-                    """
-            );
-            preparedStatement1.setDouble(1, addition);
-            preparedStatement1.setInt(2, eid);
-
-            preparedStatement1.executeUpdate();
-
-            getConnect().commit();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        employee.addEarned(addition);
-
-        this.employees.add(this.employees.indexOf(employee), employee);
-    }
-
-    public void addLedgerEntry(LedgerEntry ledgerEntry) {
-        int lid = -1;
-        Date date = ledgerEntry.getDate();
-        String note = ledgerEntry.getNote();
-        double balance = ledgerEntry.getBalance();
-
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            getConnect().setAutoCommit(false);
-
-            String updateString1 =  """
-                                    INSERT INTO Ledger(date, note, balance)
-                                    VALUES( ? , ? , ? )
-                                    """;
-            PreparedStatement preparedStatement1 = getConnect().prepareStatement(updateString1);
-            preparedStatement1.setDate(1, date);
-            preparedStatement1.setString(2, note);
-            preparedStatement1.setDouble(3, balance);
-            preparedStatement1.executeUpdate();
-
-            String queryString2 = """
-                    SELECT LAST_INSERT_ID('Ledger')""";
-            PreparedStatement preparedStatement2 = getConnect().prepareStatement(queryString2);
-            ResultSet rs2 = preparedStatement2.executeQuery();
-            lid = rs2.getInt(1);
-
-            getConnect().commit();
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        ledgerEntry.setLid(lid);
-        ledgerEntries.add(ledgerEntry);
-    }
-
     private List<Dish> fetchDishes() {
 
         List<Dish> dishList = new ArrayList<>();
@@ -329,7 +213,6 @@ public class RestaurantDB {
     }
 
     public List<Table> fetchTables(){
-        // TODO: load order data into tables' dishes (ObservableList) property
         List<Table> tableList = new ArrayList<>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -358,7 +241,6 @@ public class RestaurantDB {
 
     /**
      * does not include running balance
-     * TODO: use prepared statements
      */
     public List<LedgerEntry> fetchLedgerEntries(){
         List<LedgerEntry> ledgerList = new ArrayList<>();
@@ -475,12 +357,11 @@ public class RestaurantDB {
     }
 
 
-    public void addTable(Table table) {
+    public void addTable(TableDisplay display) {
         int tid = -1;
-        int eid = table.getEid();
-        int seats = table.getSeats();
-        double total = table.getTotal();
-        TableState tstate = table.getTstate();
+        int seats = (int)(Math.random() * 10 + 2);
+        double total = 0;
+        TableState tstate = TableState.VACANT;
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -491,7 +372,7 @@ public class RestaurantDB {
                                     VALUES( ? , ? , ? , ? )
                                     """;
             PreparedStatement preparedStatement1 = connect.prepareStatement(updateString1);
-            preparedStatement1.setInt(1, eid);
+            preparedStatement1.setNull(1, Types.INTEGER);
             preparedStatement1.setInt(2, seats);
             preparedStatement1.setDouble(3, total);
             preparedStatement1.setString(4, tstate.toString());
@@ -501,6 +382,7 @@ public class RestaurantDB {
                     SELECT LAST_INSERT_ID('Table')""";
             PreparedStatement preparedStatement2 = connect.prepareStatement(queryString2);
             ResultSet rs2 = preparedStatement2.executeQuery();
+            rs2.next();
             tid = rs2.getInt(1);
 
             getConnect().commit();
@@ -510,6 +392,10 @@ public class RestaurantDB {
             e.printStackTrace();
         }
 
+        Table table = new Table(tid, 0, seats, total, tstate.toString());
+
+        TableCard newCard = new TableCard(table, display);
+        display.getLayout().getChildren().add(newCard.getAsElement());
         table.setTid(tid);
         tables.add(table);
     }
@@ -590,10 +476,7 @@ public class RestaurantDB {
             e.printStackTrace();
         }
 
-
         this.orders.add(order);
-
-        this.getTables().set(this.getTables().indexOf(table), table);
     }
 
     /**
@@ -602,7 +485,7 @@ public class RestaurantDB {
      * both by order id
      *
      */
-    public void cancelOrder(Order order) {
+    public void cancelOrder(Order order, TableCard card) {
         int oid = order.getOid();
 
         try {
@@ -610,8 +493,8 @@ public class RestaurantDB {
             getConnect().setAutoCommit(false);
 
             String updateString1 =  """
-                                    DELETE FROM Order
-                                    WHERE oid = ?
+                                    DELETE FROM Orders
+                                    WHERE oid = ?;
                                     """;
             PreparedStatement preparedStatement1 = connect.prepareStatement(updateString1);
             preparedStatement1.setInt(1, oid);
@@ -624,67 +507,9 @@ public class RestaurantDB {
         }
 
         //TODO: include javaside effects of Order when merging
-    }
-
-    public void serveOrder(Order order){
-        int oid = order.getOid();
-        int tid = order.getTid();
-
-        double partialBill = 0;
-        for(Dish d : dishes){
-            if(d.getDid() == order.getOid()){
-                partialBill = d.getPrice();
-            }
-        }
-
-        boolean isLastOrder = false;
-        for(Table t : tables){
-            if(t.getTid() == order.getTid()){
-                if(this.getOrders().filtered(r -> r.getTid() == tid).size() == 1){
-                    isLastOrder = true;
-                }
-            }
-        }
-
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            connect = DriverManager.getConnection(
-                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
-            connect.setAutoCommit(false);
-            String updateString1 = """
-                    UPDATE Tables
-                    SET total = total + ?
-                    WHERE tid = ? 
-                    """;
-            PreparedStatement preparedStatement1 = connect.prepareStatement(updateString1);
-            preparedStatement1.setDouble(1, partialBill);
-            preparedStatement1.setInt(2, tid);
-            preparedStatement1.executeUpdate();
-
-            String updateString2 = """
-                    DELETE FROM ORDERS
-                    WHERE oid = ?
-                    """;
-            PreparedStatement preparedStatement2 = connect.prepareStatement(updateString2);
-            preparedStatement2.setInt(1, oid);
-            preparedStatement2.executeUpdate();
-
-            if(isLastOrder) {
-                String updateString3 = """
-                        UPDATE Tables
-                        SET tstate = 'SERVED'
-                        WHERE tid = ? 
-                        """;
-                PreparedStatement preparedStatement3 = connect.prepareStatement(updateString3);
-                preparedStatement3.setInt(1, tid);
-                preparedStatement3.executeUpdate();
-            }
-
-            getConnect().commit();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        //TODO: include javaside effects of Order when merging
+        this.orders.remove(order);
+        // TODO: remove from this.orders too?
+        card.getOrderView().refresh();
     }
 
     /**
@@ -696,7 +521,7 @@ public class RestaurantDB {
      * - Tables
      * - Orders
      */
-    public void serveAllOrders(Table table) {
+    public void serveAllOrders(Table table, TableCard card) {
         int tid = table.getTid();
 
         double totalBill = this.orders
@@ -720,7 +545,7 @@ public class RestaurantDB {
             preparedStatement1.executeUpdate();
 
             String updateString2 = """
-                    DELETE FROM ORDERS
+                    DELETE FROM Orders
                     WHERE tid = ?
                     """;
             PreparedStatement preparedStatement2 = getConnect().prepareStatement(updateString2);
@@ -736,11 +561,8 @@ public class RestaurantDB {
         table.setTstate(TableState.SERVED);
         table.setTotal(table.getTotal() + totalBill);
 
-        for(Order o : orders){
-            if(o.getTid() == tid){
-                orders.remove(o);
-            }
-        }
+        this.orders.removeIf(o -> o.getTid() == table.getTid());
+        card.getOrderView().refresh();
 
         this.getTables().set(this.getTables().indexOf(table), table);
     }
@@ -769,10 +591,11 @@ public class RestaurantDB {
         String note = "Table " + table.getTid() + " vacated with subtotal: " +
                 table.getTotal() + "; tip: " + tip;
 
-        double finalBill = table.getTotal() + tip;
-
-        /* TODO: Will break if employees are removed in the middle of the list */
-        Employee employee = employees.get(table.getEid());
+        Employee employee = employees
+                .stream()
+                .filter(e -> e.getEid() == table.getEid())
+                .findFirst()
+                .get();
         int eid = employee.getEid();
 
         try {
@@ -780,9 +603,9 @@ public class RestaurantDB {
             getConnect().setAutoCommit(false);
 
             String updateString1 = """
-                    UPDATE Tables\s
-                    SET tstate = 'VACANT'\s
-                    WHERE tid = ?\s
+                    UPDATE Tables
+                    SET tstate = 'VACANT'
+                    WHERE tid = ?
                     """;
             PreparedStatement preparedStatement1 = getConnect().prepareStatement(updateString1);
             preparedStatement1.setInt(1, tid);
@@ -793,7 +616,7 @@ public class RestaurantDB {
             PreparedStatement preparedStatement2 = getConnect().prepareStatement(updateString2);
             preparedStatement2.setDate(1, date);
             preparedStatement2.setString(2, note);
-            preparedStatement2.setDouble(3, finalBill);
+            preparedStatement2.setDouble(3, table.getTotal());
             preparedStatement2.executeUpdate();
 
             String queryString3 =   "SELECT LAST_INSERT_ID('Ledger')";
@@ -802,13 +625,21 @@ public class RestaurantDB {
             rs3.next();
             lid = rs3.getInt(1);
 
-            String updateString4 =  "UPDATE Employees \n" +
-                                    "SET earned = earned + ? \n" +
-                                    "WHERE eid = ?";
+            String updateString4 = """
+                    UPDATE Employees
+                    SET earned = earned + ?
+                    WHERE eid = ?""";
             PreparedStatement preparedStatement4 = getConnect().prepareStatement(updateString4);
             preparedStatement4.setDouble(1, tip);
             preparedStatement4.setInt(2, eid);
             preparedStatement4.executeUpdate();
+
+            String updateString5 =  "UPDATE Tables " +
+                                    "SET total = 0 " +
+                                    "WHERE tid = ?";
+            PreparedStatement preparedStatement5 = getConnect().prepareStatement(updateString5);
+            preparedStatement5.setInt(1, tid);
+            preparedStatement5.executeUpdate();
 
             getConnect().commit();
         } catch (Exception e) {
@@ -819,73 +650,14 @@ public class RestaurantDB {
         table.changeServer(null);
         employee.addEarned(tip);
 
-        this.getOrders().stream()
-                .filter(o -> o.getTid() == o.getTid()).forEach(this.orders::remove);
+        this.getOrders().removeIf(o -> o.getTid() == table.getTid());
+
+        this.balance += table.getTotal();
+        this.balanceString.set("$" + (int) (this.balance * 100) / 100.0);
 
         this.getTables().add(this.getTables().indexOf(table), table);
-        this.getEmployees().add(this.getEmployees().indexOf(employee), employee);
-
-        getLedgerEntries().add(new LedgerEntry(lid, date, note, finalBill));
-    }
-
-    /**
-     * Decrements the employee's earned amount and records the changes in the ledger.
-     *
-     * Uses:
-     * - eid
-     * Modifies:
-     * - Employees
-     * - Ledger
-     */
-    public void payEmployee(Employee employee, double amount) throws RuntimeException {
-        int eid = employee.getEid();
-        String ename = employee.getEname();
-        double earned = employee.getEarned();
-
-        int lid = -1;
-        double tipsPaid = earned * -1;
-        Date date = Date.valueOf(LocalDate.now());
-        String note = "Employee(" + eid + ", " + ename + ") was paid on " + date +
-                ", for: $" + earned;
-
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            getConnect().setAutoCommit(false);
-
-            String updateString1 = """
-                    UPDATE Employees
-                    SET earned = 0\s
-                    WHERE eid = ?
-                    """;
-            PreparedStatement preparedStatement1 = getConnect().prepareStatement(updateString1);
-            preparedStatement1.setInt(1, eid);
-            preparedStatement1.executeUpdate();
-
-            String updateString2 =  """
-                                    INSERT INTO Ledger(ldate, note, balance) \n" +
-                                    VALUES( ? , ? , ?)
-                                    """;
-            PreparedStatement preparedStatement2 = getConnect().prepareStatement(updateString2);
-            preparedStatement2.setDate(1, date);
-            preparedStatement2.setString(2, note);
-            preparedStatement2.setDouble(3, tipsPaid);
-            preparedStatement2.executeUpdate();
-
-            String queryString3 =   "SELECT LAST_INSERT_ID('Ledger')";
-            PreparedStatement preparedStatement3 = getConnect().prepareStatement(queryString3);
-            ResultSet rs3 = preparedStatement3.executeQuery();
-            lid = rs3.getInt(1);
-
-            getConnect().commit();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        employee.setEarned(employee.getEarned() + amount);
-        this.getEmployees().add(this.getEmployees().indexOf(employee), employee);
-
-        getLedgerEntries().add(new LedgerEntry(lid, date, note, tipsPaid));
+        getLedgerEntries().add(new LedgerEntry(lid, date, note, table.getTotal()));
+        table.setTotal(0);
     }
 
     public ObservableList<Dish> getDishes() {
@@ -908,12 +680,7 @@ public class RestaurantDB {
         return orders;
     }
 
-
-
-    /**
-     * call this before ending your program
-     */
-    public void closeConnection() throws SQLException{
-        getConnect().close();
+    public SimpleStringProperty balanceStringProperty() {
+        return balanceString;
     }
 }

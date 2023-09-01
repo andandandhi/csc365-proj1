@@ -8,5 +8,12 @@
       <jdbc-url>jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="@csc365.c1yrbhsogize.us-west-1.rds.amazonaws.com" uuid="9a061dd9-c7d8-4e5c-aa7c-0c403b8ffa17">
+      <driver-ref>mysql.8</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:mysql://csc365.c1yrbhsogize.us-west-1.rds.amazonaws.com:3306</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>

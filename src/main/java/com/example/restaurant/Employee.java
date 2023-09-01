@@ -27,10 +27,6 @@ public class Employee {
         return ename;
     }
 
-    public void setEname(String ename) {
-        this.ename = ename;
-    }
-
     public double getEarned() {
         return earned;
     }
@@ -45,9 +41,6 @@ public class Employee {
         return role;
     }
 
-    public void setRole(EmployeeRole role) {
-        this.role = role;
-    }
 
     @Override
     public String toString() {

@@ -5,7 +5,7 @@ import java.sql.Date;
 
 public class LedgerEntry {
     private int lid;
-    private Date date; //TODO use Date instead of String
+    private Date date;
     private String note;
 
     private double balance;
@@ -17,11 +17,6 @@ public class LedgerEntry {
         this.balance = balance;
     }
 
-
-    public int getLid() {
-        return lid;
-    }
-
     public void setLid(int lid) {
         this.lid = lid;
     }
@@ -30,23 +25,12 @@ public class LedgerEntry {
         return date;
     }
 
-    public void setDate(Date date) {
-        this.date = date;
-    }
-
     public String getNote() {
         return note;
-    }
-
-    public void setNote(String note) {
-        this.note = note;
     }
 
     public double getBalance() {
         return balance;
     }
 
-    public void setBalance(double balance) {
-        this.balance = balance;
-    }
 }
