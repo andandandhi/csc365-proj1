@@ -72,6 +72,8 @@ public class RestaurantDB {
             Class.forName("com.mysql.jdbc.Driver");
             connect = DriverManager.getConnection(
                     "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
+            connect.setAutoCommit(false);
+
             String updateString1 =  """
                                     INSERT INTO Dishes(dname, description, price, category)
                                     VALUES( ? , ? , ? , ? )
@@ -111,6 +113,8 @@ public class RestaurantDB {
             Class.forName("com.mysql.jdbc.Driver");
             connect = DriverManager.getConnection(
                     "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
+            connect.setAutoCommit(false);
+
             String updateString1 =  """
                                     DELETE FROM Dishes
                                     WHERE did = ?
@@ -130,11 +134,68 @@ public class RestaurantDB {
     }
 
     public void addEmployee(Employee employee) {
+        int eid = -1;
+        String ename = employee.getEname();
+        double earned = employee.getEarned();
+        String role = employee.getRole();
 
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            connect = DriverManager.getConnection(
+                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
+            connect.setAutoCommit(false);
+
+            String updateString1 =  """
+                                    INSERT INTO Employee(ename, earned, role)
+                                    VALUES( ? , ? , ? )
+                                    """;
+            PreparedStatement preparedStatement1 = connect.prepareStatement(updateString1);
+            preparedStatement1.setString(1, ename);
+            preparedStatement1.setDouble(2, earned);
+            preparedStatement1.setString(3, role);
+            preparedStatement1.executeUpdate();
+
+            String queryString2 = """
+                    SELECT LAST_INSERT_ID('Employee')""";
+            PreparedStatement preparedStatement2 = connect.prepareStatement(queryString2);
+            ResultSet rs2 = preparedStatement2.executeQuery();
+            eid = rs2.getInt(1);
+            connect.commit();
+            connect.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        employee.setEid(eid);
+        employees.add(employee);
     }
 
     public void removeEmployee(Employee employee) {
+        int eid = employee.getEid();
 
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            connect = DriverManager.getConnection(
+                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
+            connect.setAutoCommit(false);
+
+            String updateString1 =  """
+                                    DELETE FROM Employees
+                                    WHERE eid = ?
+                                    """;
+            PreparedStatement preparedStatement1 = connect.prepareStatement(updateString1);
+            preparedStatement1.setInt(1, eid);
+            preparedStatement1.executeUpdate();
+
+            connect.commit();
+            connect.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        employees.remove(employee);
     }
 
     /**
@@ -143,24 +204,88 @@ public class RestaurantDB {
      * - Employees
      */
     public void addOwed(Employee employee, double addition) {
+        int eid = employee.getEid();
 
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            connect.setAutoCommit(false);
+
+            PreparedStatement preparedStatement1 = connect.prepareStatement(
+                    """
+                    UPDATE Employees
+                    SET earned = earned + ?
+                    WHERE eid = ?
+                    """
+            );
+            preparedStatement1.setDouble(1, addition);
+            preparedStatement1.setInt(2, eid);
+
+            preparedStatement1.executeUpdate();
+
+            connect.commit();
+            connect.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        employee.addEarned(addition);
+
+        this.employees.add(this.employees.indexOf(employee), employee);
     }
 
     public void addLedgerEntry(LedgerEntry ledgerEntry) {
+        int lid = -1;
+        Date date = ledgerEntry.getDate();
+        String note = ledgerEntry.getNote();
+        double balance = ledgerEntry.getBalance();
 
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            connect = DriverManager.getConnection(
+                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
+            String updateString1 =  """
+                                    INSERT INTO Ledger(date, note, balance)
+                                    VALUES( ? , ? , ? )
+                                    """;
+            PreparedStatement preparedStatement1 = connect.prepareStatement(updateString1);
+            preparedStatement1.setDate(1, date);
+            preparedStatement1.setString(2, note);
+            preparedStatement1.setDouble(3, balance);
+            preparedStatement1.executeUpdate();
+
+            String queryString2 = """
+                    SELECT LAST_INSERT_ID('Ledger')""";
+            PreparedStatement preparedStatement2 = connect.prepareStatement(queryString2);
+            ResultSet rs2 = preparedStatement2.executeQuery();
+            lid = rs2.getInt(1);
+            connect.commit();
+            connect.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        ledgerEntry.setLid(lid);
+        ledgerEntries.add(ledgerEntry);
     }
 
-    public void removeOrder(Table table, int index) {
 
-    }
 
-    public void removeTable(Table table) {
 
-    }
-
-    public void addTable(Table table) {
-
-    }
+//    /**
+//     * not done
+//     */
+//    public List<LedgerEntry> getLedgerEntriesBetween(Date start, Date end){
+//        List<LedgerEntry> middleEntries = new ArrayList<>();
+//        for(LedgerEntry le : ledgerEntries){
+//            Date d = le.getDate();
+//            if(start.before(d) && end.after(d) || start.equals(d) || end.equals(d)) {
+//
+//            }
+//        }
+//
+//    }
 
     private List<Dish> fetchDishes() {
 
@@ -294,9 +419,76 @@ public class RestaurantDB {
         this.tables.add(this.tables.indexOf(table), table);
     }
 
+
+    public void addTable(Table table) {
+        int tid = -1;
+        int eid = table.getEid();
+        int seats = table.getSeats();
+        double total = table.getTotal();
+        TableState tstate = table.getTstate();
+
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            connect = DriverManager.getConnection(
+                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
+            String updateString1 =  """
+                                    INSERT INTO Tables(eid, seats, total, tstate)
+                                    VALUES( ? , ? , ? , ? )
+                                    """;
+            PreparedStatement preparedStatement1 = connect.prepareStatement(updateString1);
+            preparedStatement1.setInt(1, eid);
+            preparedStatement1.setInt(2, seats);
+            preparedStatement1.setDouble(3, total);
+            preparedStatement1.setString(4, tstate.toString());
+            preparedStatement1.executeUpdate();
+
+            String queryString2 = """
+                    SELECT LAST_INSERT_ID('Table')""";
+            PreparedStatement preparedStatement2 = connect.prepareStatement(queryString2);
+            ResultSet rs2 = preparedStatement2.executeQuery();
+            tid = rs2.getInt(1);
+            connect.commit();
+            connect.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        table.setTid(tid);
+        tables.add(table);
+    }
+
+
+    public void removeTable(Table table) {
+        int tid = table.getTid();
+
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            connect = DriverManager.getConnection(
+                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
+            connect.setAutoCommit(false);
+            String updateString1 =  """
+                                    DELETE FROM Tables
+                                    WHERE tid = ?
+                                    """;
+            PreparedStatement preparedStatement1 = connect.prepareStatement(updateString1);
+            preparedStatement1.setInt(1, tid);
+            preparedStatement1.executeUpdate();
+
+            connect.commit();
+            connect.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        tables.remove(table);
+    }
+
     /**
      * Adds a list of dishes associated with a table and sets the table state to Waiting.
      *
+     * TODO: turn into transaction
      * Uses:
      * - Dishes
      * - tid
@@ -331,8 +523,8 @@ public class RestaurantDB {
                 connect = DriverManager.getConnection(
                         "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
                 String updateString =   "UPDATE Tables\n" +
-                                        "SET State = 'WAITING'" +
-                                        "WHERE tid = ? ";
+                        "SET State = 'WAITING'" +
+                        "WHERE tid = ? ";
                 PreparedStatement preparedStatement = connect.prepareStatement(updateString);
                 preparedStatement.setInt(1, table.getTid());
                 preparedStatement.executeUpdate();
@@ -346,9 +538,102 @@ public class RestaurantDB {
     }
 
     /**
+     * cancelOrder
+     * serveOrder
+     * both by order id
+     *
+     */
+    public void cancelOrder(Order order) {
+        int oid = order.getOid();
+
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            connect = DriverManager.getConnection(
+                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
+            connect.setAutoCommit(false);
+            String updateString1 =  """
+                                    DELETE FROM Order
+                                    WHERE oid = ?
+                                    """;
+            PreparedStatement preparedStatement1 = connect.prepareStatement(updateString1);
+            preparedStatement1.setInt(1, oid);
+            preparedStatement1.executeUpdate();
+
+            connect.commit();
+            connect.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        //TODO: include javaside effects of Order when merging
+    }
+
+    public void serveOrder(Order order){
+        int oid = order.getOid();
+        int tid = order.getTid();
+
+        double partialBill = 0;
+        for(Dish d : dishes){
+            if(d.getDid() == order.getOid()){
+                partialBill = d.getPrice();
+            }
+        }
+
+        boolean isLastOrder = false;
+        for(Table t : tables){
+            if(t.getTid() == order.getTid()){
+                if(t.getOrders().size() == 1){
+                    isLastOrder = true;
+                }
+            }
+        }
+
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            connect = DriverManager.getConnection(
+                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
+            connect.setAutoCommit(false);
+            String updateString1 = """
+                    UPDATE Tables
+                    SET total = total + ?
+                    WHERE tid = ? 
+                    """;
+            PreparedStatement preparedStatement1 = connect.prepareStatement(updateString1);
+            preparedStatement1.setDouble(1, partialBill);
+            preparedStatement1.setInt(2, tid);
+            preparedStatement1.executeUpdate();
+
+            String updateString2 = """
+                    DELETE FROM ORDERS
+                    WHERE oid = ?
+                    """;
+            PreparedStatement preparedStatement2 = connect.prepareStatement(updateString2);
+            preparedStatement2.setInt(1, oid);
+            preparedStatement2.executeUpdate();
+
+            if(isLastOrder) {
+                String updateString3 = """
+                        UPDATE Tables
+                        SET tstate = 'SERVED'
+                        WHERE tid = ? 
+                        """;
+                PreparedStatement preparedStatement3 = connect.prepareStatement(updateString3);
+                preparedStatement3.setInt(1, tid);
+                preparedStatement3.executeUpdate();
+            }
+
+            connect.commit();
+            connect.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        //TODO: include javaside effects of Order when merging
+    }
+
+    /**
      * Record total of order prices in the table tuple, clears all orders associated with the table, set table state
      * to served.
-     * //TODO: move declarations into try statements, drop orders
      * Uses:
      * - tid
      * Modifies:
@@ -356,11 +641,7 @@ public class RestaurantDB {
      * - Orders
      */
     public void serveAllOrders(Table table) {
-        /** include:
-         * String updateString1 =   "DROP FROM Orders";
-         *             PreparedStatement preparedStatement1 = connect.prepareStatement(updateString1);
-         *             preparedStatement1.executeUpdate();
-         */
+        int tid = table.getTid();
 
         double totalBill = table.getOrders().stream().mapToDouble(Dish::getPrice).sum();
 
@@ -368,39 +649,38 @@ public class RestaurantDB {
             Class.forName("com.mysql.jdbc.Driver");
             connect = DriverManager.getConnection(
                     "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
-            String updateString =
-                    "UPDATE Tables\n" +
-                    "SET State = 'SERVED'" +
-                    "WHERE tid = ? ;";
-            PreparedStatement preparedStatement = connect.prepareStatement(updateString);
-            preparedStatement.setInt(1, table.getTid());
-            preparedStatement.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            connect = DriverManager.getConnection(
-                    "jdbc:mysql://ambari-node5.csc.calpoly.edu:3306/restaurant?user=restaurant&password=csc365");
-            String queryString = """
-                    SELECT SUM(Dishes.price)
-                    FROM Orders
-                    JOIN Dishes ON Orders.did = Dishes.did
-                    WHERE Orders.tid = table_id;
+            connect.setAutoCommit(false);
+            String updateString1 = """
+                    UPDATE Tables
+                    SET tstate = 'SERVED', total = total + ?
+                    WHERE tid = ? 
                     """;
-            PreparedStatement preparedStatement = connect.prepareStatement(queryString);
-            //preparedStatement.setInt(1, tid);
-            ResultSet rs = preparedStatement.executeQuery(
-                    "SELECT * FROM Employees");
-            while (rs.next()) {
-                totalBill = rs.getDouble(1);
-            }
+            PreparedStatement preparedStatement1 = connect.prepareStatement(updateString1);
+            preparedStatement1.setDouble(1, totalBill);
+            preparedStatement1.setInt(2, tid);
+            preparedStatement1.executeUpdate();
+
+            String updateString2 = """
+                    DELETE FROM ORDERS
+                    WHERE tid = ?
+                    """;
+            PreparedStatement preparedStatement2 = connect.prepareStatement(updateString2);
+            preparedStatement2.setInt(1, tid);
+            preparedStatement2.executeUpdate();
+
+            connect.commit();
+            connect.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
+
         table.setTstate(TableState.SERVED);
-        table.setTotal(totalBill);
+        table.setTotal(table.getTotal() + totalBill);
+
+        //TODO: include javaside effects of Order when merging
+        table.getOrders().clear();
+
 
         this.tables.add(this.tables.indexOf(table), table);
     }
@@ -532,7 +812,7 @@ public class RestaurantDB {
             preparedStatement2.setDouble(3, tipsPaid);
             preparedStatement2.executeUpdate();
 
-            String queryString3 =   "SELECT LAST_INSERT_ID";
+            String queryString3 =   "SELECT LAST_INSERT_ID()";
             PreparedStatement preparedStatement3 = connect.prepareStatement(queryString3);
             ResultSet rs3 = preparedStatement3.executeQuery();
             lid = rs3.getInt(1);
