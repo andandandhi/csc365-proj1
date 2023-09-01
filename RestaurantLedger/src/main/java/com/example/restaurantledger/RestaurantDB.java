@@ -21,18 +21,18 @@ public class RestaurantDB {
         }
     }
 
-    public List<LedgerEntry> getLedgerEntries() {
+    public List<LedgerEntry> getLedgerEntriesFromDatabase() {
         List<LedgerEntry> ledgerList = new ArrayList<>();
         try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
              Statement statement = connection.createStatement();
-             ResultSet rs = statement.executeQuery("SELECT * FROM YourLedgerTable")) {
+             ResultSet rs = statement.executeQuery("SELECT * FROM Ledger")) {
 
             while (rs.next()) {
-                int lid = rs.getInt(1);
-                Date date = rs.getDate(2);
-                String note = rs.getString(3);
-                double balance = rs.getDouble(4);
-                LedgerEntry l = new LedgerEntry(lid, date, note, balance);
+                int lid = rs.getInt("lid");
+                Date ldate = rs.getDate("ldate");
+                String note = rs.getString("note");
+                double balance = rs.getDouble("balance");
+                LedgerEntry l = new LedgerEntry(lid, ldate, note, balance);
                 ledgerList.add(l);
             }
         } catch (Exception e) {
