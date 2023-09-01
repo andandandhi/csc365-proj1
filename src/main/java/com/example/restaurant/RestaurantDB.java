@@ -879,7 +879,7 @@ public class RestaurantDB {
     /**
      * call this before ending your program
      */
-    public void closeConnection(){
+    public void closeConnection() throws SQLException{
         getConnect().close();
     }
 }
