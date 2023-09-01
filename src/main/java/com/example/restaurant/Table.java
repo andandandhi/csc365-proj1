@@ -1,17 +1,7 @@
 
 package com.example.restaurant;
 
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableStringValue;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
-import javafx.scene.text.Text;
-
-import java.util.ArrayList;
+import javafx.beans.property.SimpleStringProperty;
 
 public class Table {
     private int tid;
@@ -21,12 +11,23 @@ public class Table {
 
     private TableState tstate;
 
+    private SimpleStringProperty headerString;
+
+    private SimpleStringProperty serverString;
+
+
     public Table(int tid, int eid, int seats, double total, String tstate) {
         this.tid = tid;
         this.eid = eid;
         this.seats = seats;
         this.total = total;
-        this.tstate = TableState.valueOf(tstate);
+        this.tstate =  TableState.valueOf(tstate);
+        this.headerString = new SimpleStringProperty(
+                "Table " + tid + " - "
+                + tstate.toString().charAt(0) + tstate.toString().substring(1).toLowerCase()
+        );
+
+        this.serverString = new SimpleStringProperty("");
     }
 
     public int getTid() {
@@ -43,6 +44,18 @@ public class Table {
 
     public void setEid(int eid) {
         this.eid = eid;
+    }
+
+    public void changeServer(Employee employee) {
+        if(employee == null) {
+            this.serverString.set("");
+        } else {
+            this.serverString.set(employee.getEid() + " - " + employee.getEname());
+        }
+    }
+
+    public SimpleStringProperty getServerString() {
+        return this.serverString;
     }
 
     public int getSeats() {
@@ -67,6 +80,8 @@ public class Table {
 
     public void setTstate(TableState tstate) {
         this.tstate = tstate;
+        this.getHeaderString().set("Table " + tid + " - "
+                + tstate.toString().charAt(0) + tstate.toString().substring(1).toLowerCase());
     }
 
     @Override
@@ -78,6 +93,10 @@ public class Table {
                 ", charge=" + total +
                 ", tstate=" + tstate +
                 '}';
+    }
+
+    public SimpleStringProperty getHeaderString() {
+        return this.headerString;
     }
 
 }

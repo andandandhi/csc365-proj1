@@ -1,18 +1,16 @@
 package com.example.restaurant;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+
 import javafx.collections.transformation.FilteredList;
+import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 
 import javafx.util.Callback;
 import javafx.util.StringConverter;
-
-import java.util.ArrayList;
-import java.util.Arrays;
 
 public class TableCard extends RestaurantScene {
 
@@ -29,10 +27,7 @@ public class TableCard extends RestaurantScene {
     public TableCard(Table table, RestaurantDB restaurantDB) {
         this.restaurantDB = restaurantDB; /* TODO: belongs somewhere else? */
         this.table = table;
-        /* TODO: uncomment when Andrew writes restaurantDB.getOrdersForTable() */
-        // this.orders = FXCollections.observableList(restaurantDB.getOrdersForTable());
-        this.orders = new FilteredList<Order>(restaurantDB.getOrders());
-        this.orders.setPredicate(o -> o.getTid() == table.getTid());
+        this.orders = new FilteredList<>(restaurantDB.getOrders(), o -> o.getTid() == table.getTid());
         prepOrderView();
 
         this.layout = makeTableCard();
@@ -50,37 +45,54 @@ public class TableCard extends RestaurantScene {
 
     private void prepOrderView() {
         this.orderView = new ListView<>();
+        this.orderView.setPrefHeight(200);
 
         this.orderView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         this.orderView.setCellFactory(new Callback<>() {
             @Override
             public ListCell<Order> call(ListView<Order> employeeListView) {
-                return new ListCell<>() {
+                ListCell<Order> newCell = new ListCell<>() {
 
                     @Override
                     protected void updateItem(Order order, boolean empty) {
                         super.updateItem(order, empty);
 
-
                         if (order == null || empty) {
-                            this.setText("Missing dish");
+                            return;
                         } else {
 
-                            HBox entry = new HBox();
+                            GridPane entry = new GridPane();
+                            ButtonBar buttons = new ButtonBar();
                             Text dishName = new Text(order.getDish().getDname());
                             Button cancel = new Button("Cancel");
                             cancel.setOnAction(e -> handleOrderCancellation(order));
                             Button serve = new Button("Serve");
                             cancel.setOnAction(e -> handleOrderServe(order));
+                            buttons.getButtons().add(cancel);
+                            buttons.getButtons().add(serve);
+                            entry.add(dishName, 0, 0);
+                            entry.add(buttons, 1, 0);
 
-                            entry.getChildren().addAll(
-                                    dishName,
-                                    serve,
-                                    cancel
-                            );
+                            entry.setHgap(20);
+
+                            dishName.maxWidth(Double.MAX_VALUE);
+
+                            ColumnConstraints col1 = new ColumnConstraints();
+                            col1.setHgrow(Priority.NEVER);
+
+                            ColumnConstraints col2_3 = new ColumnConstraints(60);
+                            col2_3.setHgrow(Priority.NEVER);
+                            entry.getColumnConstraints().addAll(col1, col2_3, col2_3);
+
+                            this.getChildren().clear();
+                            this.getChildren().add(entry);
                         }
                     }
                 };
+
+                newCell.paddingProperty().set(new Insets(5, 5, 5, 5));
+
+                return newCell;
             }
         });
 
@@ -88,64 +100,43 @@ public class TableCard extends RestaurantScene {
     }
 
     public Parent getAsElement() {
-        return this.layout;
+        String cssLayout = """
+                -fx-border-color: black;
+                -fx-border-insets: 5;
+                -fx-border-width: 1;
+                -fx-border-style: solid;
+                """;
+        VBox vbox = new VBox();
+        vbox.setStyle(cssLayout);
+        vbox.getChildren().add(this.layout);
+        return vbox;
     }
 
     private VBox makeTableCard() {
         VBox cardLayout = new VBox();
+        cardLayout.setSpacing(4);
+        cardLayout.setPadding(new Insets(4, 4, 4, 4));
 
-        cardLayout.fillWidthProperty().set(true);
+        cardLayout.getChildren().addAll(
+                this.makeHeader(),
+                this.makeServerLabel(),
+                this.makeOrderView(),
+                this.makeServerAssignmentButton(),
+                this.makeAddOrderButton(),
+                this.makeServeAllButton(),
+                this.makeVacateButton(),
+                this.makeRemoveButton()
+        );
 
-        switch (this.table.getTstate()) {
-            case VACANT -> {
-                cardLayout.getChildren().addAll(
-                        this.makeHeader(),
-                        this.makeServerAssignmentButton(),
-                        this.makeRemoveButton()
-                );
-            }
-
-            case ORDERING, SERVED -> {
-                cardLayout.getChildren().addAll(
-                        this.makeHeader(),
-                        this.makeServerLabel(),
-                        this.makeOrderView(),
-                        this.makeAddOrderButton(),
-                        this.makeVacateButton(),
-                        this.makeRemoveButton()
-                );
-            }
-
-            case WAITING -> {
-                cardLayout.getChildren().addAll(
-                        this.makeHeader(),
-                        this.makeServerLabel(),
-                        this.makeOrderView(),
-                        this.makeAddOrderButton(),
-                        this.makeServeAllButton(),
-                        this.makeVacateButton(),
-                        this.makeRemoveButton()
-                );
-            }
-
-            default -> {
-                Text errorText = new Text();
-                errorText.setText("Table " + this.table.getTid() + " has unknown state.");
-                /* TODO: what to do in the default case? */
-                cardLayout.getChildren().addAll(
-                        errorText
-                );
-            }
-        }
-
+        cardLayout.setFillWidth(true);
         cardLayout.getChildren().forEach(c -> HBox.setHgrow(c, Priority.ALWAYS));
-        cardLayout.fillWidthProperty().set(true);
         return cardLayout;
     }
 
     private Button makeRemoveButton() {
         Button removeButton = new Button("Remove");
         removeButton.setOnAction(e -> restaurantDB.removeTable(this.table));
+        removeButton.setMaxWidth(Double.MAX_VALUE);
         return removeButton;
     }
 
@@ -153,16 +144,20 @@ public class TableCard extends RestaurantScene {
         /* Produce a header containing the table ID and table state */
         HBox layout = new HBox();
 
-        Text tableName = new Text("Table " + table.getTid());
-        tableName.setTextAlignment(TextAlignment.LEFT);
+//        Text tableName = new Text("Table "
+//                + table.getTid()
+//                + " - "
+//                + this.table.getTstate().toString().charAt(0)
+//                + this.table.getTstate().toString().substring(1).toLowerCase()
+//        );
 
-        Text stateLabel = new Text( /* Capitalize appropriately */
-                TableState.VACANT.toString().charAt(0)
-                        + TableState.VACANT.toString().substring(1).toLowerCase()
-        );
-        stateLabel.setTextAlignment(TextAlignment.RIGHT);
+        Text headerString = new Text();
+        headerString.textProperty().bind(this.table.getHeaderString());
+        headerString.setFont(new Font(16));
 
-        layout.getChildren().addAll(tableName, stateLabel);
+        headerString.setTextAlignment(TextAlignment.LEFT);
+
+        layout.getChildren().add(headerString);
 
         return layout;
     }
@@ -175,39 +170,24 @@ public class TableCard extends RestaurantScene {
         serverLabel.minWidth(Region.USE_COMPUTED_SIZE);
 
         /* TODO: possible for a serverLabel to be created when a table doesn't have a server? */
-        serverLabel.setText("Server: "
-                + this.table.getEid() + ": "
-                + restaurantDB.getEmployees()
-                    .stream()
-                    .findFirst()
-                    .get()
-                    .getEname()
-        );
-        /* TODO: get order names */
+//        serverLabel.setText("Server: "
+//                + this.table.getEid() + " - "
+//                + restaurantDB.getEmployees()
+//                    .stream()
+//                    .findFirst()
+//                    .get()
+//                    .getEname()
+//        );
 
+        serverLabel.textProperty().bind(table.getServerString());
         serverLabel.setTextAlignment(TextAlignment.LEFT);
-
         return serverLabel;
     }
 
     private HBox makeServerAssignmentButton()
     {
         Button commit = new Button("Assign server");
-        commit.minWidth(Region.USE_COMPUTED_SIZE);
 
-        ComboBox<Employee> serverSelection = new ComboBox<>();
-        serverSelection.minWidth(Region.USE_COMPUTED_SIZE);
-        serverSelection.setConverter(new StringConverter<Employee>() {
-            @Override
-            public String toString(Employee employee) {
-                return employee == null ? "Select server" : employee.getEid() + ": " + employee.getEname();
-            }
-
-            @Override
-            public Employee fromString(String s) {
-                return null;
-            }
-        });
 //        serverSelection.setCellFactory(new Callback<ListView<Employee>, ListCell<Employee>>() {
 //            @Override
 //            public ListCell<Employee> call(ListView<Employee> employeeListView) {
@@ -228,7 +208,22 @@ public class TableCard extends RestaurantScene {
 //            }
 //        });
 
-        serverSelection.setItems(this.restaurantDB.getEmployees());
+        ComboBox<Employee> serverSelection = new ComboBox<>();
+        serverSelection.setConverter(new StringConverter<Employee>() {
+            @Override
+            public String toString(Employee employee) {
+                return employee == null ? "Select server" : employee.getEid() + ": " + employee.getEname();
+            }
+
+            @Override
+            public Employee fromString(String s) {
+                return null;
+            }
+        });
+
+        serverSelection.setItems(restaurantDB.getEmployees());
+
+        serverSelection.setMaxWidth(Double.MAX_VALUE);
 
         /* Upon pressing the commit button, the employee assignment event should be
         * executed. */
@@ -242,15 +237,30 @@ public class TableCard extends RestaurantScene {
         });
 
         HBox layout = new HBox();
+        serverSelection.setMaxWidth(Double.MAX_VALUE);
+        layout.setMaxWidth(Double.MAX_VALUE);
         layout.getChildren().addAll(commit, serverSelection);
+
         return layout;
     }
 
 
     private HBox makeAddOrderButton()
     {
-        Button commit = new Button();
+        Button commit = new Button("Add order");
         ComboBox<Dish> dishSelection = new ComboBox<>();
+
+        dishSelection.setConverter(new StringConverter<Dish>() {
+            @Override
+            public String toString(Dish dish) {
+                return dish == null ? "Select dish" : dish.getDname();
+            }
+
+            @Override
+            public Dish fromString(String s) {
+                return null;
+            }
+        });
         dishSelection.setCellFactory(new Callback<ListView<Dish>, ListCell<Dish>>() {
             @Override
             public ListCell<Dish> call(ListView<Dish> employeeListView) {
@@ -288,7 +298,7 @@ public class TableCard extends RestaurantScene {
 
     private HBox makeVacateButton()
     {
-        Button commit = new Button();
+        Button commit = new Button("Vacate");
         TextField tipField = new TextField();
 
         commit.setOnAction(e -> {
