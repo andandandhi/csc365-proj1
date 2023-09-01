@@ -144,7 +144,7 @@ public class RestaurantDB {
         int eid = -1;
         String ename = employee.getEname();
         double earned = employee.getEarned();
-        String role = employee.getRole();
+        EmployeeRole role = employee.getRole();
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -157,7 +157,7 @@ public class RestaurantDB {
             PreparedStatement preparedStatement1 = getConnect().prepareStatement(updateString1);
             preparedStatement1.setString(1, ename);
             preparedStatement1.setDouble(2, earned);
-            preparedStatement1.setString(3, role);
+            preparedStatement1.setString(3, role.toString());
             preparedStatement1.executeUpdate();
 
             String queryString2 = """
@@ -611,7 +611,7 @@ public class RestaurantDB {
         boolean isLastOrder = false;
         for(Table t : tables){
             if(t.getTid() == order.getTid()){
-                if(t.getOrders().size() == 1){
+                if(this.getOrders().filtered(r -> r.getTid() == tid).size() == 1){
                     isLastOrder = true;
                 }
             }
@@ -651,8 +651,7 @@ public class RestaurantDB {
                 preparedStatement3.executeUpdate();
             }
 
-            connect.commit();
-            connect.close();
+            getConnect().commit();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -708,9 +707,11 @@ public class RestaurantDB {
         table.setTstate(TableState.SERVED);
         table.setTotal(table.getTotal() + totalBill);
 
-        //TODO: include javaside effects of Order when merging
-        table.getOrders().clear();
-
+        for(Order o : orders){
+            if(o.getTid() == tid){
+                orders.remove(o);
+            }
+        }
 
         this.getTables().set(this.getTables().indexOf(table), table);
     }
