@@ -13,6 +13,7 @@ public class Order {
         this.oid = oid;
         this.tid = tid;
         this.did = did;
+        this.dish = dish;
     }
 
     public int getTid() {

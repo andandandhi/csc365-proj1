@@ -270,13 +270,14 @@ public class RestaurantDB {
                 int oid = rs.getInt(1);
                 int tid = rs.getInt(2);
                 int did = rs.getInt(3);
-                Dish correspondingDish = this.dishes.stream().findFirst().get(); //TODO: what if no dish found?
+                Dish correspondingDish = this.dishes.stream().filter(d -> d.getDid() == did).findFirst().get(); //TODO: what if no dish found?
                 Order o = new Order(oid, tid, did, correspondingDish);
                 orderList.add(o);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         return orderList;
     }
 
@@ -289,6 +290,28 @@ public class RestaurantDB {
         int eid = employee.getEid();
         int tid = table.getTid();
 
+        if(employee == null)
+        {
+            table.changeServer(null);
+
+            try {
+                Class.forName("com.mysql.jdbc.Driver");
+                String updateString = """
+                    UPDATE Tables
+                    SET tstate = 'ORDERING', eid = ?
+                    WHERE tid = ?
+                    """;
+                PreparedStatement preparedStatement = getConnect().prepareStatement(updateString);
+                preparedStatement.setNull(1, Types.INTEGER);
+                preparedStatement.setInt(2, tid);
+                preparedStatement.executeUpdate();
+                this.connect.commit();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return;
+        }
+
         try {
             Class.forName("com.mysql.jdbc.Driver");
             String updateString = """
@@ -300,12 +323,14 @@ public class RestaurantDB {
             preparedStatement.setInt(1, eid);
             preparedStatement.setInt(2, tid);
             preparedStatement.executeUpdate();
+            this.connect.commit();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         table.setTstate(TableState.ORDERING);
         table.setEid(eid);
+        table.changeServer(employee);
 
         this.getTables().set(this.getTables().indexOf(table), table);
     }
@@ -328,6 +353,7 @@ public class RestaurantDB {
             Class.forName("com.mysql.jdbc.Driver");
             String updateString =  """
                                    INSERT INTO Orders
+                                   (tid, did)
                                    VALUES( ? , ? )
                                    """;
             PreparedStatement preparedStatement = getConnect().prepareStatement(updateString);
@@ -343,22 +369,22 @@ public class RestaurantDB {
             rs.next();
             int newOid = rs.getInt(1);
             order.setOid(newOid);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
+
             Class.forName("com.mysql.jdbc.Driver");
-            String updateString =   "UPDATE Tables\n" +
-                                    "SET State = 'WAITING'" +
+            String updateString2 =  "UPDATE Tables\n" +
+                                    "SET tstate = 'WAITING'" +
                                     "WHERE tid = ? ";
-            PreparedStatement preparedStatement = getConnect().prepareStatement(updateString);
-            preparedStatement.setInt(1, table.getTid());
-            preparedStatement.executeUpdate();
+            PreparedStatement preparedStatement2 = getConnect().prepareStatement(updateString2);
+            preparedStatement2.setInt(1, table.getTid());
+            preparedStatement2.executeUpdate();
+
+            this.connect.commit();
         }
         catch (Exception e) {
             e.printStackTrace();
         }
+
+        this.orders.add(order);
 
         this.getTables().set(this.getTables().indexOf(table), table);
     }
@@ -390,7 +416,7 @@ public class RestaurantDB {
             Class.forName("com.mysql.jdbc.Driver");
             String updateString =
                     "UPDATE Tables\n" +
-                    "SET State = 'SERVED'" +
+                    "SET tstate = 'SERVED'" +
                     "WHERE tid = ? ;";
             PreparedStatement preparedStatement = getConnect().prepareStatement(updateString);
             preparedStatement.setInt(1, table.getTid());
@@ -422,7 +448,6 @@ public class RestaurantDB {
 
         this.getTables().set(this.getTables().indexOf(table), table);
     }
-
 
 
     /**
@@ -477,6 +502,7 @@ public class RestaurantDB {
             String queryString3 =   "SELECT LAST_INSERT_ID('Ledger')";
             PreparedStatement preparedStatement3 = getConnect().prepareStatement(queryString3);
             ResultSet rs3 = preparedStatement3.executeQuery();
+            rs3.next();
             lid = rs3.getInt(1);
 
             String updateString4 =  "UPDATE Employees \n" +
@@ -485,8 +511,7 @@ public class RestaurantDB {
             PreparedStatement preparedStatement4 = getConnect().prepareStatement(updateString4);
             preparedStatement4.setDouble(1, tip);
             preparedStatement4.setInt(2, eid);
-            ResultSet rs4 = preparedStatement4.executeQuery();
-            lid = rs4.getInt(1);
+            preparedStatement4.executeUpdate();
 
             getConnect().commit();
         } catch (Exception e) {
@@ -494,7 +519,11 @@ public class RestaurantDB {
         }
 
         table.setTstate(TableState.VACANT);
+        table.changeServer(null);
         employee.addEarned(tip);
+
+        this.getOrders().stream()
+                .filter(o -> o.getTid() == o.getTid()).forEach(this.orders::remove);
 
         this.getTables().add(this.getTables().indexOf(table), table);
         this.getEmployees().add(this.getEmployees().indexOf(employee), employee);

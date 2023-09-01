@@ -8,7 +8,7 @@ import javafx.stage.Stage;
 
 public abstract class RestaurantScene {
 
-     public static final int xDim = 400;
+     public static final int xDim = 600;
      public static final int yDim = 500;
 
      public abstract Parent getAsElement();

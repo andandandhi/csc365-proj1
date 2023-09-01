@@ -14,8 +14,6 @@ public class HelloApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
 
-        TabPane testPane = new TabPane();
-
         stage.setTitle("Jim's Burgers");
 
         RestaurantDB restaurantDB = null;
@@ -34,45 +32,20 @@ public class HelloApplication extends Application {
             }
         }
 
-//        OwnerMenu ownerMenu = new OwnerMenu(restaurantDB);
-//
-//        Tab menuTab = new Tab("Menu");
-//        menuTab.setContent(ownerMenu.getAsElement());
-//        testPane.getTabs().add(menuTab);
-//
-//        final RestaurantDB resDB = restaurantDB;
-//
-//        ListView<Table> tableListView = new ListView<>();
-//        tableListView.setCellFactory(tableListView1 -> new ListCell<Table>() {
-//              @Override
-//              protected void updateItem(Table table, boolean empty) {
-//                    super.updateItem(table, empty);
-//
-//                    if(table == null || empty)
-//                    {
-//                        this.setText("Missing table");
-//                    } else {
-//                        this.getChildren().add(new TableCard(table, resDB).getAsElement());
-//                    }
-//              }
-//        });
-//
-//        tableListView.setItems(restaurantDB.getTables());
-//
-//        Tab tablesTab = new Tab("Tables");
-//        tablesTab.setContent(tableListView);
-//        testPane.getTabs().add(tablesTab);
-//
-//        VBox vbox = new VBox();
-//        vbox.getChildren().add(testPane);
-//        Scene scene = new Scene(vbox);
-//        stage.setScene(scene);
-//        stage.show();
+        TabPane mainTabPane = new TabPane();
 
-        Table testTable = restaurantDB.getTables().get(0);
-        TableCard testTableCard = new TableCard(testTable, restaurantDB);
-        Scene testTableScene = new Scene(testTableCard.getAsElement());
-        stage.setScene(testTableScene);
+        OwnerMenu ownerMenu = new OwnerMenu(restaurantDB);
+        Tab ownerMenuTab = new Tab("Menu");
+        ownerMenuTab.setContent(ownerMenu.getAsElement());
+        mainTabPane.getTabs().add(ownerMenuTab);
+
+        TableDisplay tableDisplay = new TableDisplay(restaurantDB);
+        Tab tableDisplayTab = new Tab("Tables");
+        tableDisplayTab.setContent(tableDisplay.getAsElement());
+        mainTabPane.getTabs().add(tableDisplayTab);
+
+        Scene mainScene = new Scene(mainTabPane, RestaurantScene.xDim, RestaurantScene.yDim);
+        stage.setScene(mainScene);
         stage.show();
     }
 
