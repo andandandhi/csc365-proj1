@@ -6,13 +6,13 @@ public class Employee {
 
     private double earned;
 
-    private String role;
+    private EmployeeRole role;
 
     public Employee(int eid, String ename, double earned, String role) {
         this.eid = eid;
         this.ename = ename;
         this.earned = earned;
-        this.role = role;
+        this.role = EmployeeRole.valueOf(role);
     }
 
     public int getEid() {
@@ -41,11 +41,11 @@ public class Employee {
 
     public void addEarned(double increase){this.earned += increase;}
 
-    public String getRole() {
+    public EmployeeRole getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(EmployeeRole role) {
         this.role = role;
     }
 

@@ -10,11 +10,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RestaurantDB {
-    private static Connection connect;
+    private Connection connect;
     private final ObservableList<Dish> dishes;
     private final ObservableList<Employee> employees;
     private final ObservableList<Table> tables;
     private final ObservableList<LedgerEntry> ledgerEntries;
+
+    private final ObservableList<Order> orders;
     
     public RestaurantDB() throws SQLException {
         setConnect(DriverManager.getConnection(
@@ -24,14 +26,16 @@ public class RestaurantDB {
         employees = FXCollections.observableList(fetchEmployees());
         tables = FXCollections.observableList(fetchTables());
         ledgerEntries = FXCollections.observableList(fetchLedgerEntries());
+        orders = FXCollections.observableList(fetchOrders()); /* MUST BE CALLED AFTER DISHES AND TABLES */
     }
 
-    public static Connection getConnect() {
+    public Connection getConnect() {
         return connect;
     }
 
-    public static void setConnect(Connection connect) {
-        RestaurantDB.connect = connect;
+    public void setConnect(Connection connect) throws SQLException {
+        this.connect = connect;
+        this.connect.setAutoCommit(false);
     }
 
     public void editDish(Dish dish, String dname, String description, double price, DishType category)
@@ -91,10 +95,13 @@ public class RestaurantDB {
             preparedStatement1.executeUpdate();
 
             String queryString2 = """
-                    SELECT LAST_INSERT_ID """;
+                    SELECT LAST_INSERT_ID('Dishes');
+                    """;
             PreparedStatement preparedStatement2 = getConnect().prepareStatement(queryString2);
             ResultSet rs2 = preparedStatement2.executeQuery();
+            rs2.next();
             rs2.getInt(1);
+
             getConnect().commit();
         }
         catch (Exception e) {
@@ -107,12 +114,7 @@ public class RestaurantDB {
 
     public void removeDish(Dish dish) {
         int did = dish.getDid();
-        String dname = dish.getDname();
-        String description = dish.getDescription();
-        double price = dish.getPrice();
-        String category = dish.getCategory().toString();
 
-        List<Dish> dishList = new ArrayList<>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
             String updateString1 =  """
@@ -129,7 +131,11 @@ public class RestaurantDB {
             e.printStackTrace();
         }
 
-        getDishes().remove(dish);
+        /* Remove all orders for this dish. */
+        this.orders.stream()
+                .filter(o -> o.getDid() == dish.getDid())
+                .forEach(this.orders::remove);
+        this.dishes.remove(dish);
     }
 
     public void addEmployee(Employee employee) {
@@ -137,7 +143,7 @@ public class RestaurantDB {
     }
 
     public void removeEmployee(Employee employee) {
-
+        // TODO: what if employee is removed while serving table?
     }
 
     /**
@@ -153,16 +159,12 @@ public class RestaurantDB {
 
     }
 
-    public void removeOrder(Table table, int index) {
-
-    }
-
     public void removeTable(Table table) {
 
     }
 
     public void addTable(Table table) {
-
+        
     }
 
     private List<Dish> fetchDishes() {
@@ -257,6 +259,27 @@ public class RestaurantDB {
         return ledgerList;
     }
 
+    private List<Order> fetchOrders() {
+        List<Order> orderList = new ArrayList<>();
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Statement statement = getConnect().createStatement();
+            ResultSet rs = statement.executeQuery(
+                    "SELECT * FROM Orders");
+            while (rs.next()) {
+                int oid = rs.getInt(1);
+                int tid = rs.getInt(2);
+                int did = rs.getInt(3);
+                Dish correspondingDish = this.dishes.stream().findFirst().get(); //TODO: what if no dish found?
+                Order o = new Order(oid, tid, did, correspondingDish);
+                orderList.add(o);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return orderList;
+    }
+
     /**
      * Assign server to a table. Set table state to Ordering
      * 
@@ -297,41 +320,47 @@ public class RestaurantDB {
      * - Orders
      * - Tables
      */
-    public void addOrders(Table table, List<Dish> dishList) {
+    public void addOrder(Table table, Dish dish) {
+        Order order = new Order(-1, table.getTid(), dish.getDid(), dish);
         table.setTstate(TableState.WAITING);
-        for(int i = 0; i < dishList.size(); i++){
-            table.getOrders().add(dishList.get(i));
-        }
-        for(int i = 0; i < dishList.size(); i++){
-            try {
-                Class.forName("com.mysql.jdbc.Driver");
-                String updateString =  """
-                                       INSERT INTO Orders
-                                       VALUES( ? , ? )
-                                       """;
-                PreparedStatement preparedStatement = getConnect().prepareStatement(updateString);
-                preparedStatement.setInt(1, table.getTid());
-                preparedStatement.setInt(2, dishList.get(i).getDid());
-                preparedStatement.executeUpdate();
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
-            try {
-                Class.forName("com.mysql.jdbc.Driver");
-                String updateString =   "UPDATE Tables\n" +
-                                        "SET State = 'WAITING'" +
-                                        "WHERE tid = ? ";
-                PreparedStatement preparedStatement = getConnect().prepareStatement(updateString);
-                preparedStatement.setInt(1, table.getTid());
-                preparedStatement.executeUpdate();
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
 
-            this.getTables().set(this.getTables().indexOf(table), table);
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            String updateString =  """
+                                   INSERT INTO Orders
+                                   VALUES( ? , ? )
+                                   """;
+            PreparedStatement preparedStatement = getConnect().prepareStatement(updateString);
+            preparedStatement.setInt(1, order.getTid());
+            preparedStatement.setInt(2, order.getDid());
+            preparedStatement.executeUpdate();
+
+            String getOrderIndexString = """
+                    SELECT LAST_INSERT_ID('Orders')
+                    """;
+            PreparedStatement preparedStatement1 = getConnect().prepareStatement(getOrderIndexString);
+            ResultSet rs = preparedStatement1.executeQuery();
+            rs.next();
+            int newOid = rs.getInt(1);
+            order.setOid(newOid);
         }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            String updateString =   "UPDATE Tables\n" +
+                                    "SET State = 'WAITING'" +
+                                    "WHERE tid = ? ";
+            PreparedStatement preparedStatement = getConnect().prepareStatement(updateString);
+            preparedStatement.setInt(1, table.getTid());
+            preparedStatement.executeUpdate();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        this.getTables().set(this.getTables().indexOf(table), table);
     }
 
     /**
@@ -351,7 +380,11 @@ public class RestaurantDB {
          *             preparedStatement1.executeUpdate();
          */
 
-        double totalBill = table.getOrders().stream().mapToDouble(Dish::getPrice).sum();
+        double totalBill = this.orders
+                .stream()
+                .filter(o -> o.getTid() == table.getTid())
+                .mapToDouble(o -> o.getDish().getPrice())
+                .sum();
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -406,7 +439,7 @@ public class RestaurantDB {
      *
      * @Args: tip: input 12.3 means a $12.30 tip
      */
-    public void vacateTable(Table table, List<Employee> employeeList, double tip) {
+    public void vacateTable(Table table, double tip) {
 
         int tid = table.getTid();
         int lid = -1;
@@ -416,7 +449,8 @@ public class RestaurantDB {
 
         double finalBill = table.getTotal() + tip;
 
-        Employee employee = employeeList.get(table.getEid());
+        /* TODO: Will break if employees are removed in the middle of the list */
+        Employee employee = employees.get(table.getEid());
         int eid = employee.getEid();
 
         try {
@@ -440,7 +474,7 @@ public class RestaurantDB {
             preparedStatement2.setDouble(3, finalBill);
             preparedStatement2.executeUpdate();
 
-            String queryString3 =   "SELECT LAST_INSERT_ID";
+            String queryString3 =   "SELECT LAST_INSERT_ID('Ledger')";
             PreparedStatement preparedStatement3 = getConnect().prepareStatement(queryString3);
             ResultSet rs3 = preparedStatement3.executeQuery();
             lid = rs3.getInt(1);
@@ -511,7 +545,7 @@ public class RestaurantDB {
             preparedStatement2.setDouble(3, tipsPaid);
             preparedStatement2.executeUpdate();
 
-            String queryString3 =   "SELECT LAST_INSERT_ID";
+            String queryString3 =   "SELECT LAST_INSERT_ID('Ledger')";
             PreparedStatement preparedStatement3 = getConnect().prepareStatement(queryString3);
             ResultSet rs3 = preparedStatement3.executeQuery();
             lid = rs3.getInt(1);
@@ -542,5 +576,17 @@ public class RestaurantDB {
 
     public ObservableList<LedgerEntry> getLedgerEntries() {
         return ledgerEntries;
+    }
+
+    public ObservableList<Order> getOrders() {
+        return orders;
+    }
+
+    public void serveOrder(Order order) {
+
+    }
+
+    public void cancelOrder(Order order) {
+
     }
 }

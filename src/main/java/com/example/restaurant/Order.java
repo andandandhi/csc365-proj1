@@ -5,7 +5,12 @@ public class Order {
 
     private int did;
 
-    public Order(int tid, int did) {
+    private int oid;
+
+    private Dish dish;
+
+    public Order(int oid, int tid, int did, Dish dish) {
+        this.oid = oid;
         this.tid = tid;
         this.did = did;
     }
@@ -24,5 +29,17 @@ public class Order {
 
     public void setDid(int did) {
         this.did = did;
+    }
+
+    public int getOid() {
+        return oid;
+    }
+
+    public void setOid(int oid) {
+        this.oid = oid;
+    }
+
+    public Dish getDish() {
+        return this.dish;
     }
 }

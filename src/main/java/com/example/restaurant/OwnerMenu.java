@@ -1,6 +1,5 @@
 package com.example.restaurant;
 
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
@@ -105,7 +104,7 @@ class OwnerMenu extends RestaurantScene
         removeButton.setOnAction(e -> {
             int selectedTabInd = this.categoryTabs.getSelectionModel().getSelectedIndex();
             Dish selectedDish = this.views.get(selectedTabInd).getSelectionModel().getSelectedItem();
-            restaurantDB.getDishes().remove(selectedDish);
+            restaurantDB.removeDish(selectedDish);
         });
 
         ToolBar controls = new ToolBar(
@@ -122,7 +121,7 @@ class OwnerMenu extends RestaurantScene
     }
 
     /* Returns the root element for the menu view, allowing it to be
-    * embedded in a layout */
+     * embedded in a layout */
     public Pane getAsElement() {
         return this.layout;
     }
@@ -157,7 +156,7 @@ class OwnerMenu extends RestaurantScene
         gp.add(descriptionField, 1, 2);
 
         /* Sets the width of the label column to the width of the description
-        * label (the longest label of the three) */
+         * label (the longest label of the three) */
         ColumnConstraints labelCol = new ColumnConstraints(descriptionText.getPrefWidth());
         labelCol.setHgrow(Priority.NEVER);
         /* Allows the second column to fill remaining space. */
@@ -167,7 +166,7 @@ class OwnerMenu extends RestaurantScene
         gp.getColumnConstraints().add(fieldCol);
 
         /* Constrains the first two rows to one line and allows
-        * the description to fill remaining space. */
+         * the description to fill remaining space. */
         RowConstraints nameRow = new RowConstraints();
         gp.getRowConstraints().add(nameRow);
 
@@ -234,9 +233,7 @@ class OwnerMenu extends RestaurantScene
                         price,
                         DishType.values()[(this.categoryTabs.getSelectionModel().getSelectedIndex())].toString() // TODO: update with appropriate value
                 );
-                // TODO: is the dish automatically displayed in the ListView
-                // upon being added to the underlying ObservableList?
-                this.restaurantDB.getDishes().add(newDish);
+                this.restaurantDB.addDish(newDish);
                 /* Update database with new dish, closing the dish addition window */
                 // TODO: add new entry to database here.
                 addStage.close();

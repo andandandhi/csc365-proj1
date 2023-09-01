@@ -11,7 +11,6 @@ public abstract class RestaurantScene {
      public static final int xDim = 400;
      public static final int yDim = 500;
 
-
      public abstract Parent getAsElement();
 
 

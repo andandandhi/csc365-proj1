@@ -1,8 +1,15 @@
 
 package com.example.restaurant;
 
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableStringValue;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.scene.text.Text;
 
 import java.util.ArrayList;
 
@@ -14,15 +21,12 @@ public class Table {
 
     private TableState tstate;
 
-    private ObservableList<Dish> orders;
-
     public Table(int tid, int eid, int seats, double total, String tstate) {
         this.tid = tid;
         this.eid = eid;
         this.seats = seats;
         this.total = total;
         this.tstate = TableState.valueOf(tstate);
-        this.orders = FXCollections.observableList(new ArrayList<>());
     }
 
     public int getTid() {
@@ -76,8 +80,5 @@ public class Table {
                 '}';
     }
 
-    public ObservableList<Dish> getOrders() {
-        return orders;
-    }
 }
 
